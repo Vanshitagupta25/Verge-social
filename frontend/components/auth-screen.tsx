@@ -218,7 +218,7 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
           </button>
         </form>
 
-        <div className="text-center pt-3 border-t border-[#374151]">
+        <div className="text-center pt-3 border-t border-[rgb(55,65,81)]">
           <p className="text-sm text-gray-500">
             {showSignUp ? 'Already have an account?' : "Don't have an account?"}
             <button

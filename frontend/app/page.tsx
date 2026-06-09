@@ -52,10 +52,10 @@ export interface Post {
 export interface User {
   _id: string;
   email: string;
-  username: string;
   name: string;
-  avatar: string;
   avatarUrl: string;
+  username: string;
+  avatar: string;
   role: string;
   recentPosts: number;
 }

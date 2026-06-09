@@ -21,9 +21,8 @@ async function bootstrap() {
     },
   });
 
-  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
-    .split(',')
-    .map((origin) => origin.trim());
+  const rawOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173';
+  const allowedOrigins = rawOrigins.split(',').map((origin) => origin.trim());
 
   app.enableCors({
     origin: allowedOrigins,
