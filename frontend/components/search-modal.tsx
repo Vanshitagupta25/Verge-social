@@ -84,7 +84,7 @@ export default function SearchModal({
     const delayDebounceFn = setTimeout(async () => {
       try {
         const response = await axios.get<SearchResponse>(
-          `http://localhost:8000/search?q=${encodeURIComponent(query)}`,
+          `https://instant-plsl.onrender.com//search?q=${encodeURIComponent(query)}`,
           { withCredentials: true }
         );
 
@@ -177,7 +177,7 @@ return (
                     >
                       {channel.logoUrl ? (
                         <img 
-                          src={`http://localhost:8000/uploads/${channel.logoUrl}`}
+                          src={`https://instant-plsl.onrender.com//uploads/${channel.logoUrl}`}
                           alt={channel.name || 'channel'}
                           crossOrigin="anonymous"
                           className="w-10 h-10 rounded-lg object-cover bg-[#006239]"
@@ -217,7 +217,7 @@ return (
                     >
                       {user.avatarUrl ? (
                         <img 
-                          src={`http://localhost:8000/uploads/${user.avatarUrl}`}
+                          src={`https://instant-plsl.onrender.com/uploads/${user.avatarUrl}`}
                           alt={user.name}
                           crossOrigin="anonymous"
                           className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-[#00A870] to-[#006239]"

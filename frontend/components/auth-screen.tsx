@@ -115,124 +115,124 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
   );
 
   return (
-  <div className="h-screen w-full overflow-hidden bg-[#111827] text-gray-100 flex items-center justify-center px-4">
-    <div className="w-full max-w-md">
-      
-      <div className="mb-6 text-center">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-lg bg-[#006239] flex items-center justify-center text-white">
-            <VergeLogoSVG />
+    <div className="min-h-screen w-full bg-[#111827] text-gray-100 flex flex-col justify-center items-center px-4 py-6 overflow-y-auto">
+      <div className="w-full max-w-md my-auto">
+
+        <div className="mb-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-lg bg-[#006239] flex items-center justify-center text-white">
+              <VergeLogoSVG />
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
+              Verge
+            </h1>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            Verge
-          </h1>
-        </div>
-        <p className="text-gray-500 text-sm">Anonymous & Structured Feedback Platform</p>
-      </div>
-
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-6 md:p-8 space-y-4 shadow-2xl">
-        
-        {showSignUp && (
-          <button
-            onClick={() => setShowSignUp(false)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors"
-          >
-            <ArrowLeft size={16} />
-            <span>Back to Sign In</span>
-          </button>
-        )}
-
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-white">{showSignUp ? 'Create Account' : 'Welcome Back'}</h2>
-          <p className="text-sm text-gray-500">{showSignUp ? 'Sign up to join the community' : 'Sign in to your account to continue'}</p>
+          <p className="text-gray-500 text-sm">Anonymous & Structured Feedback Platform</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-500" size={18} />
-              <input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-          </div>
+        <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-6 md:p-8 space-y-4 shadow-2xl">
 
-          <div className="space-y-1">
-            <label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Username
-            </label>
-            <div className="relative">
-              <UserIcon className="absolute left-3 top-3 text-gray-500" size={18} />
-              <input
-                id="username"
-                type="text"
-                placeholder="your_username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 text-gray-500" size={18} />
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500 hover:text-white transition-colors focus:outline-none"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || !email || !username || !password}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-4 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] hover:from-[#00A870]/90 hover:to-[#006239]/90 disabled:from-[#374151] disabled:to-[#374151] disabled:cursor-not-allowed text-white font-semibold transition-all shadow-lg"
-          >
-            <LogIn size={18} />
-            <span>{isLoading ? (showSignUp ? 'Creating Account...' : 'Signing in...') : (showSignUp ? 'Create Account' : 'Sign In')}</span>
-          </button>
-        </form>
-
-        <div className="text-center pt-3 border-t border-[rgb(55,65,81)]">
-          <p className="text-sm text-gray-500">
-            {showSignUp ? 'Already have an account?' : "Don't have an account?"}
+          {showSignUp && (
             <button
-              onClick={() => setShowSignUp(!showSignUp)}
-              className="ml-2 text-[#00A870] hover:text-[#00A870]/80 font-semibold transition-colors"
+              onClick={() => setShowSignUp(false)}
+              className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors"
             >
-              {showSignUp ? 'Sign In' : 'Sign Up'}
+              <ArrowLeft size={16} />
+              <span>Back to Sign In</span>
             </button>
-          </p>
-        </div>
-      </div>
+          )}
 
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-white">{showSignUp ? 'Create Account' : 'Welcome Back'}</h2>
+            <p className="text-sm text-gray-500">{showSignUp ? 'Sign up to join the community' : 'Sign in to your account to continue'}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 text-gray-500" size={18} />
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Username
+              </label>
+              <div className="relative">
+                <UserIcon className="absolute left-3 top-3 text-gray-500" size={18} />
+                <input
+                  id="username"
+                  type="text"
+                  placeholder="your_username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 text-gray-500" size={18} />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-500 hover:text-white transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !email || !username || !password}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-4 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] hover:from-[#00A870]/90 hover:to-[#006239]/90 disabled:from-[#374151] disabled:to-[#374151] disabled:cursor-not-allowed text-white font-semibold transition-all shadow-lg"
+            >
+              <LogIn size={18} />
+              <span>{isLoading ? (showSignUp ? 'Creating Account...' : 'Signing in...') : (showSignUp ? 'Create Account' : 'Sign In')}</span>
+            </button>
+          </form>
+
+          <div className="text-center pt-3 border-t border-[#374151]">
+            <p className="text-sm text-gray-500">
+              {showSignUp ? 'Already have an account?' : "Don't have an account?"}
+              <button
+                onClick={() => setShowSignUp(!showSignUp)}
+                className="ml-2 text-[#00A870] hover:text-[#00A870]/80 font-semibold transition-colors"
+              >
+                {showSignUp ? 'Sign In' : 'Sign Up'}
+              </button>
+            </p>
+          </div>
+        </div>
+
+      </div>
     </div>
-  </div>
-);
+  );
 }

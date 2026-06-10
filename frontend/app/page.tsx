@@ -141,9 +141,11 @@ export default function Page() {
   const addPost = (newPost: Post) => {
   const formattedPost: Post = {
     ...newPost,
-    imageUrl: newPost.imageUrl?.startsWith('http') 
-      ? newPost.imageUrl 
-      : `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${newPost.imageUrl.replace(/^\//, '')}`,
+    imageUrl: newPost.imageUrl
+  ? (newPost.imageUrl.startsWith('http')
+      ? newPost.imageUrl
+      : `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${newPost.imageUrl.replace(/^\//, '')}`)
+  : undefined,
     
     authorId: typeof newPost.authorId === 'string' ? {
       _id: newPost.authorId,
@@ -154,7 +156,6 @@ export default function Page() {
   setPosts((prev) => [formattedPost, ...prev]); 
   
   setShowPostCreation(false);
-  toast.success('Post is created successfully!');
 };
   const addComment = async (postId: string, content: string, parentId: string | null = null) => {
     try {
@@ -180,7 +181,7 @@ export default function Page() {
     try {
       const token = localStorage.getItem('token');
 
-      await api.delete(`http://localhost:8000/posts/${_id}`, {
+      await api.delete(`https://instant-plsl.onrender.com/posts/${_id}`, {
         data: { token }
       });
       setPosts((prevPosts) => prevPosts.filter((p) => p._id !== _id));

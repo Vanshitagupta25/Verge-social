@@ -290,7 +290,13 @@ export default function Feed({
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
 
+    const id = postToDelete;
+
+    setIsDeleteModalOpen(false);
+    setPostToDelete(null);
+
     setLoading(true);
+
     try {
       const token = localStorage.getItem('token');
 
@@ -298,33 +304,29 @@ export default function Feed({
         toast.error('Authentication token not found. Please log in again.');
         throw new Error('Token missing');
       }
-      console.log("checking token", token);
-      const response = await axios.delete(`http://localhost:8000/posts/${postToDelete}`, {
-        withCredentials: true,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        data: {
 
-          token: token
+      const response = await axios.delete(
+        `https://instant-plsl.onrender.com/posts/${id}`,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-
-      });
-      console.log("response for delt url", response);
+      );
 
       if (response.status === 200 || response.data?.success) {
-        setPosts((prevPosts) => prevPosts.filter((item) => item._id !== postToDelete));
+        setPosts(prevPosts =>
+          prevPosts.filter(item => item._id !== id)
+        );
 
         toast.success('Post Deleted Successfully');
-        setIsDeleteModalOpen(false);
-        setPostToDelete(null);
-
         router.push('/');
       }
     } catch (error) {
-      console.error("Deletion request failed:", error);
-      toast.success('Post Deleted Successfully');
+      console.error('Deletion request failed:', error);
+      toast.error('Failed to delete post');
     } finally {
       setLoading(false);
     }
@@ -503,13 +505,13 @@ export default function Feed({
                         e.stopPropagation();
                         openLightbox(e, { ...post, imageUrl: imageSrc });
                       }}
-                      className="mb-4 w-fit max-w-[520px] rounded-xl overflow-hidden bg-[#374151] cursor-pointer"
+                      className="mb-4 w-full max-w-[520px] rounded-xl overflow-hidden bg-[#374151] cursor-pointer"
                     >
                       <img
                         src={imageSrc}
                         alt="Post media"
-                        className="w-full h-[320px] object-cover"
-                        onError={(e) => {
+                        className="w-full h-auto max-h-[70vh] object-contain"
+                        onError={() => {
                           console.log("Image load failed, URL was:", imageSrc);
                         }}
                       />
