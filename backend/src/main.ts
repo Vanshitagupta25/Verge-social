@@ -1,33 +1,27 @@
 import 'reflect-metadata';
+import './config/cloudinary.config';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-
-import { join } from 'path';
+import cloudinary from './config/cloudinary.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-    setHeaders: (res) => {
-      res.set('Access-Control-Allow-Origin', '*');
-      res.set('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
-      res.set(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept',
-      );
-    },
-  });
-
-  const rawOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173';
+  const rawOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000';
   const allowedOrigins = rawOrigins.split(',').map((origin) => origin.trim());
 
   app.enableCors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+  });
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
   app.useGlobalPipes(

@@ -1,9 +1,9 @@
 import { Controller, Patch, Body, UseInterceptors, UploadedFile, BadRequestException, UseGuards, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { UsersService } from './user.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 @Controller('users')
 export class UsersController {
@@ -13,18 +13,17 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `avatar-${uniqueSuffix}${ext}`);
-        },
+      storage: new CloudinaryStorage({
+        cloudinary: cloudinary,
+        params: {
+          folder: 'avatars',
+          format: async (req: any, file: any) => 'jpg',
+          public_id: (req: any, file: any) => `avatar-${Date.now()}`,
+        } as any,
       }),
       fileFilter: (req, file, callback) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return callback(new BadRequestException('Only image files (jpg, jpeg, png, webp) are allowed!'), false);
+          return callback(new BadRequestException('Only image files are allowed!'), false);
         }
         callback(null, true);
       },
@@ -33,7 +32,7 @@ export class UsersController {
   async updateProfile(
     @Req() req: any,
     @Body('name') name: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any, // file.path will be the Cloudinary URL
   ) {
     const user = req.user;
     if (!user) {
@@ -43,7 +42,9 @@ export class UsersController {
 
     const payload: any = {};
     if (name && name.trim()) payload.name = name.trim();
-    if (file) payload.avatarUrl = file.filename;
+    
+    // Use file.path instead of file.filename
+    if (file) payload.avatarUrl = file.path; 
 
     if (Object.keys(payload).length === 0) {
       throw new BadRequestException('No changes provided to update.');
