@@ -487,33 +487,19 @@ export default function ThreadPage() {
 
                 <p className="text-gray-200 leading-relaxed mb-4">{post.content}</p>
 
-                {post.imageUrl && (() => {
-                  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-                  let finalImageSrc = '';
-
-                  if (post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://')) {
-                    finalImageSrc = post.imageUrl;
-                  } else {
-                    const cleanPath = post.imageUrl.replace(/^\//, '');
-                    const finalPath = cleanPath.startsWith('uploads/') ? cleanPath : `uploads/${cleanPath}`;
-                    finalImageSrc = `${baseUrl.replace(/\/$/, '')}/${finalPath}`;
-                  }
-
-                  return (
-                    <div className="mb-4 w-full h-[280px] md:h-[360px] rounded-xl overflow-hidden bg-[#374151]">
-                      <img
-                        src={finalImageSrc}
-                        alt="Post media"
-                        className="w-full h-full object-cover"
-                        crossOrigin="anonymous"
-                        onError={(e) => {
-                          console.error("Thread page image load failed for path:", finalImageSrc);
-                        }}
-                      />
-                    </div>
-                  );
-                })()}
-
+                {post.imageUrl && (
+                  <div className="mb-4 w-full h-[280px] md:h-[360px] rounded-xl overflow-hidden bg-[#374151]">
+                    <img
+                      src={post.imageUrl}
+                      alt="Post media"
+                      className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error("Cloudinary image failed to load:", post.imageUrl);
+                      }}
+                    />
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 text-[#00A870]">
                   <MessageCircle size={14} />
                   <span>

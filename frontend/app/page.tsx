@@ -139,23 +139,23 @@ export default function Page() {
   };
 
   const addPost = (newPost: Post) => {
-    const formattedPost: Post = {
-      ...newPost,
-      // Agar authorId object nahi hai, toh use ui format ke hisab se mock populate kar do
-      authorId: typeof newPost.authorId === 'string' ? {
-        _id: newPost.authorId,
-        name: currentUser?.username || currentUser?.name || 'You'
-      } : newPost.authorId,
-      author: newPost.author || currentUser?.username || 'You'
-    };
-
-    console.log("Rendering loop me push hone wala completely formatted post:", formattedPost)
-    console.log("Naya Post Channel ID:", newPost.channelId);
-    console.log("Abhi selected Active Channel ID:", activeChannelId);
-    setPosts((prev) => [newPost, ...prev]);
-    setShowPostCreation(false);
-    toast.success('Post is created successfully!');
+  const formattedPost: Post = {
+    ...newPost,
+    imageUrl: newPost.imageUrl?.startsWith('http') 
+      ? newPost.imageUrl 
+      : `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${newPost.imageUrl.replace(/^\//, '')}`,
+    
+    authorId: typeof newPost.authorId === 'string' ? {
+      _id: newPost.authorId,
+      name: currentUser?.username || currentUser?.name || 'You'
+    } : newPost.authorId,
+    author: newPost.author || currentUser?.username || 'You'
   };
+  setPosts((prev) => [formattedPost, ...prev]); 
+  
+  setShowPostCreation(false);
+  toast.success('Post is created successfully!');
+};
   const addComment = async (postId: string, content: string, parentId: string | null = null) => {
     try {
       const response = await api.post('/comments', {

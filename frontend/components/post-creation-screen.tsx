@@ -91,7 +91,6 @@ export default function PostCreationScreen({ isOpen, currentUser, onClose, onSub
 
       const formData = createFormData();
       const response = await uploadPost(formData);
-      console.log("Backend res", response.data);
 
       toast.success('Post created successfully!');
 

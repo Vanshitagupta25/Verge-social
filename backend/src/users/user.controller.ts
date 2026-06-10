@@ -43,7 +43,6 @@ export class UsersController {
     const payload: any = {};
     if (name && name.trim()) payload.name = name.trim();
     
-    // Use file.path instead of file.filename
     if (file) payload.avatarUrl = file.path; 
 
     if (Object.keys(payload).length === 0) {

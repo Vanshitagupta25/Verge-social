@@ -11,7 +11,8 @@ import api from '@/app/api/api'
 import { toast } from 'react-hot-toast';
 import { DeleteModal } from './DeleteModal';
 import axios from 'axios';
-import { tr } from 'date-fns/locale';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface FeedProps {
   posts: Post[];
@@ -328,6 +329,12 @@ export default function Feed({
       setLoading(false);
     }
   };
+  const resolveImageUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    // This is the fallback for your legacy/broken database records
+    return `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${url.replace(/^\//, '')}`;
+  };
 
   // Animation variants
   const cardVariants = {
@@ -393,7 +400,6 @@ export default function Feed({
 
           {/* Right */}
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Search Icon - Raw transparent button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -417,23 +423,12 @@ export default function Feed({
       </motion.div>
 
       {/* Scrollable Feed */}
-      <div className="flex-1 overflow-auto py-3">
+      <div className="flex-1 overflow-auto py-3 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="space-y-3 px-3 md:px-5 max-w-xl">
           {posts.map((post, i) => {
             const postKey = post._id && post._id !== "" ? post._id : `new-post-fallback-${i}-${Date.now()}`;
 
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-            let imageSrc = null;
-
-            if (post.imageUrl) {
-              if (post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://')) {
-                imageSrc = post.imageUrl;
-              } else {
-                const cleanPath = post.imageUrl.replace(/^\//, '');
-                const finalPath = cleanPath.startsWith('uploads/') ? cleanPath : `uploads/${cleanPath}`;
-                imageSrc = `${baseUrl.replace(/\/$/, '')}/${finalPath}`;
-              }
-            }
+            const imageSrc = resolveImageUrl(post.imageUrl);
 
             const postAuthorIdStr = post.authorId && typeof post.authorId === 'object'
               ? post.authorId._id
@@ -441,13 +436,13 @@ export default function Feed({
 
             const currentUserIdStr = currentUser?._id;
 
+            const authorName = postAuthorIdStr && currentUserIdStr && postAuthorIdStr === currentUserIdStr
+              ? (currentUser.name || currentUser.username)
+              : (post.authorId && typeof post.authorId === 'object' ? post.authorId.name : (post.author || 'Anonymous'));
+
             const canDelete =
               currentUser?.role === 'admin' ||
               (postAuthorIdStr && currentUserIdStr && postAuthorIdStr === currentUserIdStr);
-
-            const authorName = post.authorId && typeof post.authorId === 'object'
-              ? post.authorId.name
-              : (post.author || 'Anonymous');
 
             return (
               <div
@@ -502,12 +497,10 @@ export default function Feed({
                       </button>
                     )}
                   </div>
-
                   {imageSrc && (
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("click test", post);
                         openLightbox(e, { ...post, imageUrl: imageSrc });
                       }}
                       className="mb-4 w-fit max-w-[520px] rounded-xl overflow-hidden bg-[#374151] cursor-pointer"
@@ -517,7 +510,7 @@ export default function Feed({
                         alt="Post media"
                         className="w-full h-[320px] object-cover"
                         onError={(e) => {
-                          console.log("Image load failed, attempting fallback resolution.");
+                          console.log("Image load failed, URL was:", imageSrc);
                         }}
                       />
                     </div>
@@ -569,7 +562,6 @@ export default function Feed({
           })}
         </div>
       </div>
-      
       <ImageLightbox
         isOpen={!!lightboxImage}
         onClose={() => setLightboxImage(null)}
@@ -579,10 +571,9 @@ export default function Feed({
           lightboxImage?.url
             ? lightboxImage.url.startsWith('http')
               ? lightboxImage.url
-              : `http://localhost:8000/uploads/${lightboxImage.url.replace(/^\//, '')}`
+              : `https://res.cloudinary.com/dbq123abc/image/upload/posts/${lightboxImage.url.replace(/^\//, '')}`
             : null
         }
-
         metrics={lightboxImage?.metrics}
       />
       <div className="bg-[#111827] text-white">

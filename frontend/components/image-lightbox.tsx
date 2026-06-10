@@ -87,42 +87,6 @@ export default function ImageLightbox({
               </div>
             )}
           </div>
-
-          {/* Interactive Bottom Overlay metrics */}
-          <div 
-            className="w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-8 pt-12 px-4 flex justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {metrics && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-6 bg-gray-900/80 border border-gray-800 px-6 py-2.5 rounded-full shadow-lg backdrop-blur-sm text-sm text-gray-300"
-              >
-                {/* Score Indicator */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <ChevronUp size={16} />
-                    <span className="font-bold font-mono">{metrics.upvotesCountes || 0}</span>
-                  </div>
-                  <div className="w-[1px] h-3 bg-gray-700" />
-                  <div className="flex items-center gap-1 text-red-400">
-                    <ChevronDown size={16} />
-                    <span className="font-bold font-mono">{metrics.downvotesCount || 0}</span>
-                  </div>
-                </div>
-
-                <div className="w-[1px] h-4 bg-gray-800" />
-
-                {/* Direct Comments Count */}
-                <div className="flex items-center gap-1.5 text-blue-400">
-                  <MessageCircle size={16} />
-                  <span className="font-semibold text-gray-200 font-mono">{metrics.comments || 0}</span>
-                  <span className="text-xs text-gray-500 ml-0.5">replies</span>
-                </div>
-              </motion.div>
-            )}
-          </div>
         </motion.div>
       )}
     </AnimatePresence>

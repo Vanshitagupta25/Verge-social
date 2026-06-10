@@ -54,12 +54,13 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
       _id: response.data.user.id,
       email: response.data.user.email,
       username: response.data.user.name,
-      avatar: response.data.user.name.charAt(0).toUpperCase(),
+      avatar: response.data.user.avatarUrl || null,
       recentPosts: 2,
       role: response.data.user.role,
+      avatarUrl: response.data.user.avatarUrl,
     };
 
-    toast.success(`Welcome back, ${response.data.user.name}! 🔥`, {
+    toast.success(`Welcome back, ${response.data.user.name}!`, {
       style: {
         borderRadius: '10px',
         background: '#1f2937',

@@ -12,32 +12,27 @@ export class PostsController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() body: any, @UploadedFile() file: any, @Req() req: any) {
-    console.log("DEBUG: Entered the create method!");
-    console.log("BODY CONTENT:", body);
-    console.log("FILE OBJECT:", file);
+    console.log("body", body);
+    console.log("file object", file);
 
     let imageUrl = body.imageUrl;
-
     console.log("File received in controller", file, imageUrl);
+
     if (file) {
       const result = await new Promise((resolve, reject) => {
-        console.log("Buffer exists:", !!file?.buffer);
-        console.log("Buffer length:", file?.buffer?.length);
         cloudinary.uploader.upload_stream(
           { folder: 'posts' },
           (error, result) => {
-            console.log("Cloudinary Error:", error);
-            console.log("Cloudinary Result:", result);
 
             if (error) reject(error);
             else resolve(result);
           }
         ).end(file.buffer);
       });
-      console.log("Cloudinary URL generated:", (result as any).secure_url);
       imageUrl = (result as any).secure_url;
     }
 
+    console.log("FINAL IMAGE URL:", imageUrl);
     return this.postsService.createPost(
       body.content,
       req.user.sub,

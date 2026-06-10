@@ -11,7 +11,9 @@ interface ProfileToggleProps {
   onUpdateUsername: (newUsername: string) => void;
   onUpdateAvatar?: (avatarImage: string) => void;
   onLogout: () => void;
+  setCurrentUser: (user: User | null) => void;
 }
+const BACKEND_URL = 'https://instant-plsl.onrender.com';
 
 export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateAvatar, onLogout }: ProfileToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,8 +24,6 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const componentRef = useRef<HTMLDivElement>(null);
-
-  const BACKEND_STATIC_URL = 'https://verge-7.onrender.com/uploads';
 
   useEffect(() => {
     if (currentUser) {
@@ -78,12 +78,12 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
       const formData = new FormData();
 
       if (fields.name) formData.append('name', fields.name);
-      if (fields.avatarFile) formData.append('avatar', fields.avatarFile);
+      if (fields.avatarFile) formData.append('image', fields.avatarFile);
 
       const token = localStorage.getItem('token');
 
       const response = await axios.patch(
-        'https://verge-7.onrender.com/users/profile',
+        `${BACKEND_URL}/users/profile`,
         formData,
         {
           headers: {
@@ -121,12 +121,41 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const localUrl = URL.createObjectURL(file);
-      setAvatarPreview(localUrl);
-      submitProfileChanges({ avatarFile: file });
+    if (!file) return;
+
+    setAvatarPreview(URL.createObjectURL(file));
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const token = localStorage.getItem('token');
+      const response = await axios.patch(`${BACKEND_URL}/users/profile`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const updatedUser = response.data.user || response.data;
+      if (updatedUser && updatedUser.avatarUrl) {
+        if (onUpdateAvatar) {
+          onUpdateAvatar(updatedUser.avatarUrl);
+        }
+
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          localStorage.setItem('user', JSON.stringify({ ...parsed, avatarUrl: updatedUser.avatarUrl }));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to upload avatar:', error);
+      setAvatarPreview(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,18 +164,21 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
     setUsernameInput(currentUser.username || currentUser.name || '');
   };
 
-  const getAvatarSrc = () => {
-    if (avatarPreview) return avatarPreview;
+ const getAvatarSrc = () => {
+  if (avatarPreview) return avatarPreview;
 
-    const dbAvatar = currentUser.avatarUrl || currentUser.avatar;
-    if (dbAvatar) {
-      if (dbAvatar.startsWith('http://') || dbAvatar.startsWith('https://') || dbAvatar.startsWith('blob:')) {
-        return dbAvatar;
-      }
-      return `${BACKEND_STATIC_URL}/${dbAvatar}`;
+  const dbAvatar = currentUser?.avatarUrl;
+  
+  if (dbAvatar) {
+    if (dbAvatar.startsWith('http')) return dbAvatar;
+    
+    if (dbAvatar.includes('uploads/')) {
+        return `${BACKEND_URL}/${dbAvatar.replace(/^\//, '')}`;
     }
-    return null;
-  };
+    return `${BACKEND_URL}/uploads/${dbAvatar.replace(/^\//, '')}`;
+  }
+  return null;
+};
 
   const activeAvatar = getAvatarSrc();
   const currentDisplayName = currentUser.username || currentUser.name || 'User';
