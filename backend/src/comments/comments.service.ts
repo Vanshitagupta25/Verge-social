@@ -44,7 +44,7 @@ export class CommentsService {
     }
     const allComments = await this.commentModel
       .find({ postId: new Types.ObjectId(postId) })
-      .populate('authorId', 'name email role')
+      .populate('authorId', 'name email role avatarUrl')
       .sort({ createdAt: 1 })
       .lean()
       .exec();

@@ -12,11 +12,8 @@ export class PostsController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() body: any, @UploadedFile() file: any, @Req() req: any) {
-    console.log("body", body);
-    console.log("file object", file);
 
     let imageUrl = body.imageUrl;
-    console.log("File received in controller", file, imageUrl);
 
     if (file) {
       const result = await new Promise((resolve, reject) => {
@@ -31,8 +28,6 @@ export class PostsController {
       });
       imageUrl = (result as any).secure_url;
     }
-
-    console.log("FINAL IMAGE URL:", imageUrl);
     return this.postsService.createPost(
       body.content,
       req.user.sub,
@@ -40,7 +35,6 @@ export class PostsController {
       body.channelId
     );
   }
-
   @Get()
   async getFeed(
     @Query('limit') limit: string,

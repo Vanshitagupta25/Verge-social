@@ -15,7 +15,7 @@ export class UsersService {
       .findByIdAndUpdate(
         userId,
         { $set: payload },
-        { returnDocument: 'after' } // Clean Mongoose deprecation fix
+        { returnDocument: 'after' }
       )
       .select('-password')
       .exec();

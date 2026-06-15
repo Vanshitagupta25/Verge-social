@@ -32,7 +32,7 @@ export class UsersController {
   async updateProfile(
     @Req() req: any,
     @Body('name') name: string,
-    @UploadedFile() file: any, // file.path will be the Cloudinary URL
+    @UploadedFile() file: any,
   ) {
     const user = req.user;
     if (!user) {

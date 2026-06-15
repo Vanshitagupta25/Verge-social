@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsUrl, Length } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreatePostDto {
 

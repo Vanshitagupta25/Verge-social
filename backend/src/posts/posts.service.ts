@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { Post, PostDocument } from './schemas/post.schema';
-import { queueScheduler } from 'rxjs';
 
 @Injectable()
 export class PostsService {
@@ -29,32 +28,35 @@ export class PostsService {
       imageUrl: imageUrl || null,
       channelId: finalChannelId,
     });
-
+    console.log("new post", newPost);
     return newPost.save();
   }
 
   async getAllPosts() {
-    return this.postModel.find().populate('authorId', 'name email role').exec();
+    return this.postModel.find().populate('authorId', 'name email role avatarUrl').exec();
   }
 
   async getPaginatedPosts(limit: number, nextCursor?: string, channelId?: string) {
+    console.log('GET PAGINATED POSTS HIT');
     const query: any = {};
 
     if (channelId) {
       query.channelId = new Types.ObjectId(channelId);
     } else {
-      query.channelId = null; 
+      query.channelId = null;
     }
-     if (nextCursor) {
+    if (nextCursor) {
       query._id = { $lt: new Types.ObjectId(nextCursor) };
     }
 
     const posts = await this.postModel
       .find(query)
-      .populate('authorId', 'name email role')
+      .populate('authorId', 'name email role avatarUrl')
       .sort({ _id: -1 })
       .limit(limit + 1)
       .exec();
+
+    console.log('POST AUTHOR', JSON.stringify(posts[0]?.authorId, null, 2));
 
     const hasNextPage = posts.length > limit;
 
@@ -74,12 +76,11 @@ export class PostsService {
   }
 
   async getPostById(postId: string) {
-    const post = await this.postModel.findById(postId).populate('authorId', 'name email role').exec();
-    
+    const post = await this.postModel.findById(postId).populate('authorId', 'name email role avatarUrl').exec();
+
     if (!post) {
       throw new NotFoundException(`Post with ID ${postId} not found`);
     }
-
     return post;
   }
 

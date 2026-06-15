@@ -35,7 +35,6 @@ export class AuthService {
       password: hashedPassword,
       role: assignedRole,
     });
-    console.log("user", newUser);
 
     return {
       userId: newUser._id,
@@ -64,7 +63,6 @@ export class AuthService {
       email: user.email,
       role: assignedRole,
     };
-    console.log('payload', payload);
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {

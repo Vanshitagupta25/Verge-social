@@ -14,7 +14,6 @@ export class SignupDto {
   })
   password!: string;
 }
-
 export class LoginDto {
   @IsEmail({}, { message: 'Please enter a valid email address' })
   email!: string;

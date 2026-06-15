@@ -15,7 +15,6 @@ export class ChannelsService {
   async create(createChannelDto: CreateChannelDto): Promise<Channel> {
     try {
       const newChannel = new this.channelModel(createChannelDto);
-      console.log("channel", newChannel);
       return await newChannel.save();
     } catch (error: any) {
       if (error.code === 11000) {

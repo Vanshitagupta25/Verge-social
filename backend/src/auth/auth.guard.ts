@@ -11,7 +11,6 @@ interface JwtPayload {
   sub: string;
   email: string;
 }
-
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
