@@ -1,9 +1,8 @@
 'use client';
 
-import { Search, X, Hash, User, Loader2} from 'lucide-react';
+import { Search, X, Hash, User, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Channel, User as UserType } from '@/app/page';
 import axios from 'axios';
 
 interface SearchModalProps {
@@ -33,11 +32,13 @@ interface SearchResponse {
     channels: BackendChannel[];
   };
 }
-export default function SearchModal({ 
-  isOpen, 
-  onClose, 
+const BACKEND_URL = 'https://instant-plsl.onrender.com';
+
+export default function SearchModal({
+  isOpen,
+  onClose,
   onSelectChannel,
-  onSelectUser 
+  onSelectUser
 }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [fetchedChannels, setFetchedChannels] = useState<BackendChannel[]>([]);
@@ -84,12 +85,12 @@ export default function SearchModal({
     const delayDebounceFn = setTimeout(async () => {
       try {
         const response = await axios.get<SearchResponse>(
-          `https://instant-plsl.onrender.com//search?q=${encodeURIComponent(query)}`,
+          `${BACKEND_URL}/search?q=${encodeURIComponent(query)}`,
           { withCredentials: true }
         );
+        console.log("check search response", response)
 
         if (response.data.success) {
-          // Force set the array safely directly from backend response payload
           setFetchedChannels(response.data.data.channels || []);
           setFetchedUsers(response.data.data.users || []);
         }
@@ -114,7 +115,7 @@ export default function SearchModal({
     onClose();
   };
 
-return (
+  return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -160,7 +161,7 @@ return (
 
             {/* Live Results Stream Area */}
             <div className="max-h-80 overflow-y-auto">
-              
+
               {/* Dynamic Channels Section */}
               {fetchedChannels.length > 0 && (
                 <div className="p-2">
@@ -176,8 +177,8 @@ return (
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#1f2937] transition-colors text-left"
                     >
                       {channel.logoUrl ? (
-                        <img 
-                          src={`https://instant-plsl.onrender.com//uploads/${channel.logoUrl}`}
+                        <img
+                          src={`https://instant-plsl.onrender.com/uploads/${channel.logoUrl}`}
                           alt={channel.name || 'channel'}
                           crossOrigin="anonymous"
                           className="w-10 h-10 rounded-lg object-cover bg-[#006239]"
@@ -216,15 +217,20 @@ return (
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#1f2937] transition-colors text-left"
                     >
                       {user.avatarUrl ? (
-                        <img 
-                          src={`https://instant-plsl.onrender.com/uploads/${user.avatarUrl}`}
+                        <img
+                          src={user.avatarUrl}
                           alt={user.name}
                           crossOrigin="anonymous"
                           className="w-10 h-10 rounded-full object-cover bg-gradient-to-br from-[#00A870] to-[#006239]"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center flex-shrink-0">
-                          <User size={18} className="text-white" />
+                          {user.name
+                            ?.split(' ')
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((word) => word[0].toUpperCase())
+                            .join('')}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -257,12 +263,16 @@ return (
               )}
             </div>
 
-            {/* Modal Footer hints */}
-            <div className="px-4 py-3 border-t border-[#374151] text-xs text-gray-500 flex items-center justify-between">
-              <span>Press ESC to close</span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-2 py-1 rounded bg-[#1f2937] text-gray-400">Enter</kbd>
-                <span>to select</span>
+            <div className="px-4 py-3 border-t border-[#374151] flex items-center justify-between">
+              <button
+                onClick={onClose}
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+
+              <span className="flex items-center gap-1 text-xs text-gray-500">
+                <span>Click to select</span>
               </span>
             </div>
           </motion.div>

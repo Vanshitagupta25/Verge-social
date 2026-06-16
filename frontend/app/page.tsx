@@ -36,6 +36,7 @@ export interface Post {
   authorId: {
     _id: string;
     name: string;
+    avatarUrl: string;
   };
   content: string;
   color: string;
@@ -52,7 +53,6 @@ export interface Post {
 export interface User {
   _id: string;
   email: string;
-  name: string;
   avatarUrl: string;
   username: string;
   avatar: string;

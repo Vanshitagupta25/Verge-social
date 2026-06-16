@@ -16,6 +16,9 @@ export class Comment {
 
   @Prop({ type: Types.ObjectId, ref: 'Comment', default: null })
   parentId!: Types.ObjectId | null;
+
+  @Prop({ default: false })
+  editedOnce!: boolean;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

@@ -2,17 +2,14 @@
 import { MessageCircle, Trash2, ChevronUp, ChevronDown, Search } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { Post, Comment, Channel, User } from '@/app/page';
-import ProfileToggle from './profile-toggle';
 import AuthScreen from '@/components/auth-screen';
 import ImageLightbox, { type ImageMetrics } from '@/components/image-lightbox';
 import api from '@/app/api/api'
 import { toast } from 'react-hot-toast';
+import { FeedHeader } from './feed-header';
 import { DeleteModal } from './DeleteModal';
 import axios from 'axios';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface FeedProps {
   posts: Post[];
@@ -69,9 +66,7 @@ export default function Feed({
       if (!isAuthenticated || !token || token === 'null' || token === 'undefined') {
         return;
       }
-
       if (loading && !isChannelSwitch) return;
-      console.log("fetch posts trigger", activeChannelId, "Is Switch:", isChannelSwitch);
 
       setLoading(true);
 
@@ -81,13 +76,11 @@ export default function Feed({
         if (activeChannelId && activeChannelId !== 'null' && activeChannelId !== 'undefined') {
           url += `&channelId=${activeChannelId}`;
         }
-
         if (currentCursor) {
           url += `&cursor=${currentCursor}`;
         }
-        console.log("url", url);
-
         const response = await api.get(url);
+        console.log("feed res", response);
         const { data, meta } = response.data;
         const nextCursor = meta?.nextCursor;
         const backendHasMore = meta?.hasNextPage ?? false;
@@ -334,7 +327,6 @@ export default function Feed({
   const resolveImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    // This is the fallback for your legacy/broken database records
     return `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${url.replace(/^\//, '')}`;
   };
 
@@ -382,53 +374,20 @@ export default function Feed({
   };
   return (
     <div className="flex-1 h-screen flex flex-col bg-[#111827]">
-      {/* Feed Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="px-4 md:px-6 py-4 border-b border-[#374151] bg-[#006239] sticky top-0 z-10"
-      >
-        <div className="flex items-center justify-between">
-          {/* Left */}
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              #{channel?.name || 'general'}
-            </h2>
-            <p className="text-xs text-white/70 mt-1">
-              {channel?.description || 'Discussions'}
-            </p>
-          </div>
-
-          {/* Right */}
-          <div className="flex items-center gap-2 md:gap-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onOpenSearch}
-              className="p-2 transition-colors"
-              title="Search"
-            >
-              <Search size={18} className="text-white/80 hover:text-white" />
-            </motion.button>
-
-            {currentUser && (
-              <ProfileToggle
-                currentUser={currentUser}
-                onUpdateUsername={onUpdateUsername}
-                onUpdateAvatar={onUpdateAvatar}
-                onLogout={onLogout}
-              />
-            )}
-          </div>
-        </div>
-      </motion.div>
+      <FeedHeader
+        channel={channel}
+        currentUser={currentUser}
+        onOpenSearch={onOpenSearch}
+        onUpdateUsername={onUpdateUsername}
+        onUpdateAvatar={onUpdateAvatar}
+        onLogout={onLogout}
+      />
 
       {/* Scrollable Feed */}
       <div className="flex-1 overflow-auto py-3 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="space-y-3 px-3 md:px-5 max-w-xl">
           {posts.map((post, i) => {
-            const postKey = post._id && post._id !== "" ? post._id : `new-post-fallback-${i}-${Date.now()}`;
+            const postKey = post._id && post._id !== "" ? post._id : `new-post-fallback-${i}`;
 
             const imageSrc = resolveImageUrl(post.imageUrl);
 
@@ -439,8 +398,13 @@ export default function Feed({
             const currentUserIdStr = currentUser?._id;
 
             const authorName = postAuthorIdStr && currentUserIdStr && postAuthorIdStr === currentUserIdStr
-              ? (currentUser.name || currentUser.username)
+              ? (currentUser.username)
               : (post.authorId && typeof post.authorId === 'object' ? post.authorId.name : (post.author || 'Anonymous'));
+
+            const authorAvatar =
+              post.authorId && typeof post.authorId === "object"
+                ? post.authorId.avatarUrl
+                : null;
 
             const canDelete =
               currentUser?.role === 'admin' ||
@@ -450,15 +414,27 @@ export default function Feed({
               <div
                 ref={i === posts.length - 1 ? lastPostRef : null}
                 key={postKey}
+                onClick={(e) => navigateToThread(e, post._id)}
                 className="p-4 md:p-6 hover:bg-transparent border-b border-[#2d3748] rounded-none cursor-pointer group"
               >
                 <div className="flex-1 min-w-0">
 
                   <div className="flex items-center gap-3 mb-3 justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full ${post.color || 'bg-emerald-600'} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                        {authorName ? authorName.charAt(0).toUpperCase() : 'P'}
-                      </div>
+                      {authorAvatar ? (
+                        <img
+                          src={authorAvatar}
+                          alt={authorName}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className={`w-8 h-8 rounded-full ${post.color || "bg-emerald-600"
+                            } flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+                        >
+                          {authorName ? authorName.charAt(0).toUpperCase() : "P"}
+                        </div>
+                      )}
 
                       <span className="font-mono font-semibold text-white text-sm">
                         {authorName}
@@ -469,18 +445,19 @@ export default function Feed({
                       </span>
                     </div>
 
-                    <button
-                      type="button"
-                      disabled={!canDelete}
-                      onClick={(e) => handleDeleteClick(e, post._id)}
-                      className={`p-1.5 transition-all duration-200 rounded-lg ${canDelete
-                        ? 'text-red-400 opacity-100 hover:bg-red-500/10 cursor-pointer'
-                        : 'text-gray-600 opacity-30 cursor-not-allowed'
-                        }`}
-                      title={canDelete ? "Delete Post" : "You do not have permission to delete this post"}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(e, post._id);
+                        }}
+                        className="p-1.5 transition-all duration-200 rounded-lg text-red-400 hover:bg-red-500/10 cursor-pointer"
+                        title="Delete Post"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
 
                   <div className="mb-4">
@@ -492,7 +469,10 @@ export default function Feed({
 
                     {shouldTruncate(post.content || '') && (
                       <button
-                        onClick={(e) => toggleExpand(e, post._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleExpand(e, post._id)
+                        }}
                         className="mt-2 text-sm font-medium text-[#00A870]"
                       >
                         {expandedPosts[post._id] ? 'Read Less' : 'Read More'}
@@ -512,7 +492,6 @@ export default function Feed({
                         alt="Post media"
                         className="w-full h-auto max-h-[70vh] object-contain"
                         onError={() => {
-                          console.log("Image load failed, URL was:", imageSrc);
                         }}
                       />
                     </div>
@@ -521,7 +500,10 @@ export default function Feed({
                   <div className="flex items-center gap-4 md:gap-6 pt-1 text-xs font-medium">
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <button
-                        onClick={(e) => handleUpvote(e, post._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpvote(e, post._id)
+                        }}
                         className={`p-1.5 rounded-lg transition-colors ${userUpvotes[post._id]
                           ? 'bg-[#00A870]/30 text-[#00A870]'
                           : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
@@ -536,7 +518,10 @@ export default function Feed({
 
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <button
-                        onClick={(e) => handleDownvote(e, post._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownvote(e, post._id)
+                        }}
                         className={`p-1.5 rounded-lg transition-colors ${userDownvotes[post._id]
                           ? 'bg-red-500/30 text-red-400'
                           : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
@@ -550,7 +535,6 @@ export default function Feed({
                     </div>
 
                     <button
-                      onClick={(e) => navigateToThread(e, post._id)}
                       className="flex items-center gap-1.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                     >
                       <MessageCircle size={18} />

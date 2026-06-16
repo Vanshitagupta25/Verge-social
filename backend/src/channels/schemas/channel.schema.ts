@@ -9,7 +9,7 @@ export class Channel {
   name: string;
 
   @Prop({ required: true, trim: true })
-  description: string;
+  description?: string;
 
   @Prop({ default: true })
   isActive: boolean;

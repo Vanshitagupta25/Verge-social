@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Options, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../users/schemas/user.schema';
@@ -23,17 +23,11 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let assignedRole = 'user';
-
-    if (email.endsWith('@admin.com') || email === '.admin@gmail.com') {
-      assignedRole = 'admin';
-    }
-
     const newUser = await this.userModel.create({
       name,
       email,
       password: hashedPassword,
-      role: assignedRole,
+      role: 'user',
     });
 
     return {
@@ -55,13 +49,12 @@ export class AuthService {
     if (!isPasswordMatch) {
       throw new UnauthorizedException('Invalid credentials!');
     }
-    const assignedRole = loginDto.role || user.role;
 
     // Generate JWT Token
     const payload = {
       sub: user._id.toString(),
       email: user.email,
-      role: assignedRole,
+      role: user.role,
     };
     return {
       access_token: await this.jwtService.signAsync(payload),

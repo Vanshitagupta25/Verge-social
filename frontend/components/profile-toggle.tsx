@@ -1,17 +1,17 @@
 'use client';
 
-import { ChevronDown, LogOut, Pencil, Camera } from 'lucide-react';
+import { LogOut, Pencil, Camera } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import type { User } from '@/app/page';
+import toast from 'react-hot-toast'
 
 interface ProfileToggleProps {
   currentUser: User | null;
   onUpdateUsername: (newUsername: string) => void;
   onUpdateAvatar?: (avatarImage: string) => void;
   onLogout: () => void;
-  setCurrentUser: (user: User | null) => void;
 }
 const BACKEND_URL = 'https://instant-plsl.onrender.com';
 
@@ -27,7 +27,7 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
 
   useEffect(() => {
     if (currentUser) {
-      setUsernameInput(currentUser.username || currentUser.name || '');
+      setUsernameInput(currentUser.username || '');
     }
   }, [currentUser]);
 
@@ -105,6 +105,7 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
         }
         setEditingUsername(false);
       }
+    toast.success("Profile updated successfully");
     } catch (error) {
       console.error('Failed to update profile:', error);
     } finally {
@@ -113,7 +114,7 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
   };
 
   const handleSaveUsername = () => {
-    const currentName = currentUser.username || currentUser.name || '';
+    const currentName = currentUser.username || '';
     if (usernameInput.trim() && usernameInput.trim() !== currentName) {
       submitProfileChanges({ name: usernameInput.trim() });
     } else {
@@ -151,6 +152,7 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
           localStorage.setItem('user', JSON.stringify({ ...parsed, avatarUrl: updatedUser.avatarUrl }));
         }
       }
+       toast.success("Profile updated successfully");
     } catch (error) {
       console.error('Failed to upload avatar:', error);
       setAvatarPreview(null);
@@ -161,55 +163,55 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
 
   const handleCancel = () => {
     setEditingUsername(false);
-    setUsernameInput(currentUser.username || currentUser.name || '');
+    setUsernameInput(currentUser.username || '');
   };
 
- const getAvatarSrc = () => {
-  if (avatarPreview) return avatarPreview;
+  const getAvatarSrc = () => {
+    if (avatarPreview) return avatarPreview;
 
-  const dbAvatar = currentUser?.avatarUrl;
-  
-  if (dbAvatar) {
-    if (dbAvatar.startsWith('http')) return dbAvatar;
-    
-    if (dbAvatar.includes('uploads/')) {
+    const dbAvatar = currentUser?.avatarUrl;
+
+    if (dbAvatar) {
+      if (dbAvatar.startsWith('http')) return dbAvatar;
+
+      if (dbAvatar.includes('uploads/')) {
         return `${BACKEND_URL}/${dbAvatar.replace(/^\//, '')}`;
+      }
+      return `${BACKEND_URL}/uploads/${dbAvatar.replace(/^\//, '')}`;
     }
-    return `${BACKEND_URL}/uploads/${dbAvatar.replace(/^\//, '')}`;
-  }
-  return null;
-};
+    return null;
+  };
 
   const activeAvatar = getAvatarSrc();
-  const currentDisplayName = currentUser.username || currentUser.name || 'User';
+  const currentDisplayName = currentUser.username || 'User';
+
+  const initials = currentDisplayName
+  .split(' ')
+  .filter(Boolean)
+  .slice(0, 2)
+  .map(word => word[0].toUpperCase())
+  .join('');
 
   return (
     <div className="relative" ref={componentRef}>
       {/* Pill Layout Button wrapper */}
       <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111827] hover:bg-[#1f2937] border border-[#374151] transition-all max-w-[180px] w-full overflow-hidden"
+        className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#00A870]/30 hover:border-[#00A870] transition-all shadow-md"
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          {activeAvatar ? (
-            <img
-              src={activeAvatar}
-              alt="Avatar"
-              className="w-7 h-7 rounded-lg object-cover flex-shrink-0"
-            />
-          ) : (
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              {currentDisplayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-
-          <span className="text-sm font-semibold text-white truncate flex-1 text-left whitespace-nowrap overflow-hidden">
-            {currentDisplayName}
-          </span>
-        </div>
-        <ChevronDown size={16} className="text-gray-400 transition-transform flex-shrink-0" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} />
+        {activeAvatar ? (
+          <img
+            src={activeAvatar}
+            alt="Avatar"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-sm font-bold">
+            {initials}
+          </div>
+        )}
       </motion.button>
 
       {/* Dropdown Panel */}
@@ -224,23 +226,23 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
           >
             {/* Profile Header */}
             <div className="bg-[#1f2937] p-4 space-y-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="relative group flex-shrink-0">
+              <div className="flex flex-col items-centertext-center gap-3 min-w-0">
+                <div className="relative group w-14 h-14 flex-shrink-0">
                   {activeAvatar ? (
                     <img
                       src={activeAvatar}
                       alt="Avatar"
-                      className="w-12 h-12 rounded-lg object-cover"
+                      className="w-14 h-14 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-sm font-bold">
                       {currentDisplayName.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <button
                     disabled={loading}
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 rounded-lg bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity disabled:cursor-not-allowed"
+                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity disabled:cursor-not-allowed"
                   >
                     <Camera size={14} className="text-white" />
                   </button>
@@ -297,7 +299,7 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
                 <button
                   onClick={() => {
                     setEditingUsername(true);
-                    setUsernameInput(currentUser.username || currentUser.name || '');
+                    setUsernameInput(currentUser.username || '');
                   }}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#374151] hover:bg-[#4b5563] text-gray-300 text-xs font-semibold rounded-lg transition-colors"
                 >

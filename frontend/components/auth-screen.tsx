@@ -16,6 +16,7 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
   const [showSignUp, setShowSignUp] = useState(false);
   const [errorMsg, SetErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSignup = async () => {
     await api.post('/auth/signup', {
@@ -44,10 +45,7 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
     const response = await api.post('/auth/login', {
       email,
       password,
-      role,
     });
-    console.log(response);
-
     localStorage.setItem('token', response.data.access_token);
 
     const loggedInUser: User = {
@@ -166,23 +164,25 @@ export default function AuthScreen({ onAuthenticate }: { onAuthenticate: (user: 
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Username
-              </label>
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-3 text-gray-500" size={18} />
-                <input
-                  id="username"
-                  type="text"
-                  placeholder="your_username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
-                  required
-                />
+            {showSignUp && (
+              <div className="space-y-1">
+                <label htmlFor="username" className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Username
+                </label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-3 text-gray-500" size={18} />
+                  <input
+                    id="username"
+                    type="text"
+                    placeholder="your_username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-1">
               <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-gray-500">

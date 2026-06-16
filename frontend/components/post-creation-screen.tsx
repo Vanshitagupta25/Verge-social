@@ -112,12 +112,6 @@ export default function PostCreationScreen({ isOpen, currentUser, onClose, onSub
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
@@ -156,11 +150,22 @@ export default function PostCreationScreen({ isOpen, currentUser, onClose, onSub
           <div className="p-6 space-y-4">
             {/* User Info */}
             <div className="flex items-center gap-3 pb-4 border-b border-[#374151]">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-xs font-bold uppercase">
-                {currentUser.username ? currentUser.username[0] : 'U'}
-              </div>
+              {currentUser?.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={currentUser.username || "User"}
+                  className="w-10 h-10 rounded-lg object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00A870] to-[#006239] flex items-center justify-center text-white text-xs font-bold uppercase">
+                  {currentUser?.username ? currentUser.username[0] : "U"}
+                </div>
+              )}
+
               <div>
-                <p className="text-sm font-semibold text-white">{currentUser.name || 'Anonymous User'}</p>
+                <p className="text-sm font-semibold text-white">
+                  {currentUser?.username || "Anonymous User"}
+                </p>
               </div>
             </div>
 
@@ -172,7 +177,6 @@ export default function PostCreationScreen({ isOpen, currentUser, onClose, onSub
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                onKeyDown={handleKeyDown}
                 placeholder="What's on your mind? Share your feedback, ideas, or thoughts..."
                 className="w-full min-h-32 px-4 py-3 bg-[#1f2937] border border-[#374151] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 focus:border-transparent transition-all resize-none"
                 autoFocus

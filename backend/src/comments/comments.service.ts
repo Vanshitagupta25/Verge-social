@@ -84,6 +84,9 @@ export class CommentsService {
     if (comment.authorId.toString() !== currentUser?.id) {
       throw new ForbiddenException('You are not authorized to edit this comment');
     }
+    if (comment.editedOnce) {
+     throw new ForbiddenException("You can edit only once");
+    }
     comment.content = newContent;
     await comment.save();
 
@@ -97,7 +100,6 @@ export class CommentsService {
     if (!Types.ObjectId.isValid(commentId)) {
       throw new BadRequestException('Invalid Comment ID');
     }
-    console.log('DEBUG CURRENT USER:', currentUser);
     const comment = await this.commentModel.findById(commentId);
     if (!comment) {
       throw new NotFoundException('Comment not found');

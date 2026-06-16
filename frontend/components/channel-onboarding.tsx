@@ -69,9 +69,12 @@ export default function ChannelOnboarding({
               >
                 <div className="space-y-2">
                   <h3 className="font-semibold text-white text-sm sm:text-base break-words">#{channel.name}</h3>
-                  <p className="text-[11px] sm:text-xs text-gray-400 leading-relaxed break-words line-clamp-3 sm:line-clamp-4">
-                    {channel.description}
-                  </p>
+                  <textarea
+                    value={channel.description || ""}
+                    readOnly
+                    rows={4}
+                    className="w-full bg-transparent text-[11px] sm:text-xs text-gray-400 leading-relaxed resize-none focus:outline-none border-none overflow-hidden"
+                  />
                 </div>
 
                 <motion.button

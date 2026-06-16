@@ -44,11 +44,11 @@ export default function Sidebar({
           </svg>
           <h1 className="text-lg font-extrabold tracking-tight text-white">Verge</h1>
         </div>
-        <button 
-          onClick={() => setIsOpen(false)} 
+        <button
+          onClick={() => setIsOpen(false)}
           className="md:hidden p-1 hover:bg-[#1f2937] rounded-lg text-gray-400 hover:text-white"
         >
-          <X size={18} />
+          <X size={30} />
         </button>
       </div>
 
@@ -72,8 +72,8 @@ export default function Sidebar({
       <div className="flex-1 overflow-y-auto p-3 space-y-1">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 px-2 py-0.5 mb-1">Channels</div>
         {channels.map((channel, index) => (
-          <motion.div 
-            key={channel._id} 
+          <motion.div
+            key={channel._id}
             className="group"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -84,16 +84,15 @@ export default function Sidebar({
                 onSelectChannel(channel._id);
                 setIsOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 rounded-lg transition-all duration-200 ${
-                activeChannelId === channel._id
+              className={`w-full text-left px-3 py-1.5 rounded-lg transition-all duration-200 ${activeChannelId === channel._id
                   ? 'bg-[#006239] text-white border border-[#00A870] font-semibold'
                   : 'text-gray-400 hover:text-white hover:bg-[#1f2937]'
-              }`}
+                }`}
             >
               <span className="text-xs font-mono">#{channel.name}</span>
             </button>
             {activeChannelId === channel._id && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 className="px-3 py-1 text-[11px] text-gray-500 border-l-2 border-[#00A870]/40 ml-1.5 break-words"
@@ -117,7 +116,7 @@ export default function Sidebar({
 
   return (
     <>
-      <div className="md:hidden fixed top-3 left-3 z-40">
+      <div className="fixed top-3 left-3 z-40">
         <button
           onClick={() => setIsOpen(true)}
           className="p-1.5 bg-[#111827] border border-[#374151] text-white rounded-lg shadow-md hover:bg-[#1f2937] transition-colors focus:outline-none"
@@ -136,7 +135,7 @@ export default function Sidebar({
               onClick={() => setIsOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             />
-            
+
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
@@ -194,12 +193,12 @@ export default function Sidebar({
 
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">Description</label>
-                  <input
-                    type="text"
+                  <textarea
                     placeholder="What is this channel for?"
                     value={newChannelDesc}
                     onChange={(e) => setNewChannelDesc(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-[#1f2937] border border-[#374151] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 text-xs transition-all"
+                    rows={4}
+                    className="w-full px-3 py-2 bg-[#1f2937] border border-[#374151] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A870]/50 text-xs transition-all resize-none"
                   />
                 </div>
               </div>

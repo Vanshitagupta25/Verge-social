@@ -5,7 +5,9 @@ import { User } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>
+  ) {}
 
   async updateProfileFields(userId: string, payload: any) {
     delete payload.role;
@@ -23,10 +25,23 @@ export class UsersService {
     if (!updatedUser) {
       throw new NotFoundException('User not found');
     }
-
     return {
       success: true,
       user: updatedUser,
     };
+  }
+  async makeAdmin(userId: string) {
+    const existingAdmin = await this.userModel.findOne({
+      role: 'admin',
+    });
+
+    if(existingAdmin) {
+      throw new Error('An admin already exists');
+    }
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { role: 'admin' },
+      { new: true},
+    );
   }
 }
