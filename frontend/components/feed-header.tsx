@@ -23,12 +23,12 @@ export function FeedHeader({
   onLogout,
 }: FeedHeaderProps) {
   return (
-    <div className="px-4 md:px-6 py-4 border-b border-[#374151] bg-[#006239] sticky top-0 z-10">
+    <div className="px-4 md:px-6 py-4  bg-[#006239] sticky top-0 z-10">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="sticky top-0 z-10 bg-[#111827]/95 backdrop-blur px-4 md:px-6 py-3 border-b border-[#374151]"
+        className="sticky top-0 z-10 backdrop-blur px-4 md:px-6 py-3"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 pl-4 md:pl-0">

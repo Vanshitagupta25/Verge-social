@@ -80,7 +80,6 @@ export default function Feed({
           url += `&cursor=${currentCursor}`;
         }
         const response = await api.get(url);
-        console.log("feed res", response);
         const { data, meta } = response.data;
         const nextCursor = meta?.nextCursor;
         const backendHasMore = meta?.hasNextPage ?? false;

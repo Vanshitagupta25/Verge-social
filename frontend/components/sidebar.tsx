@@ -66,7 +66,7 @@ export default function Sidebar({
           <Plus size={16} />
           <span>Create Channel</span>
         </motion.button>
-        <p className="text-[10px] text-gray-600 mt-1 text-center">Admin Feature</p>
+        <p className="text-[10px] text-gray-600 mt-1 text-center">Admin / User Feature</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -184,6 +184,7 @@ export default function Sidebar({
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">Channel Name</label>
                   <input
                     type="text"
+                    autoFocus
                     placeholder="e.g., feedback-requests"
                     value={newChannelName}
                     onChange={(e) => setNewChannelName(e.target.value)}

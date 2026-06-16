@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 export interface Channel {
   _id: string;
   name: string;
-  description: string;
+  description?: string;
 }
 
 export interface Comment {
@@ -122,13 +122,25 @@ export default function Page() {
   }, [isAuthenticated]);
 
   const addChannel = async (name: string, description: string) => {
+      if (!description.trim()) {
+    toast.error("Channel description is mandatory.");
+    return;
+  }
+  if (description.trim().length < 10 || description.trim().length > 200) {
+    toast.error("Description must be between 10 and 200 characters.");
+    return;
+  }
     try {
       const response = await api.post('/channels', { name, description });
+
       setChannels((prev) => [...prev, response.data]);
       toast.success('New Channel Created');
 
-    } catch (err) {
-      toast.error('Failed in Channel creation');
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message?.join("\n") ||
+        "Failed in Channel creation"
+      );
     }
     const newChannel: Channel = {
       _id: String(channels.length + 1),

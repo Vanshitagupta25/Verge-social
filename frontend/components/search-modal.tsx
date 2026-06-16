@@ -46,32 +46,6 @@ export default function SearchModal({
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input when modal opens
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
-
-  // Handle escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
-
   useEffect(() => {
     if (!query.trim()) {
       setFetchedChannels([]);
@@ -142,10 +116,10 @@ export default function SearchModal({
                 <Search size={20} className="text-[#00A870]" />
               )}
               <input
-                ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                autoFocus
                 placeholder="Search channels and users..."
                 className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-base"
               />
@@ -190,7 +164,6 @@ export default function SearchModal({
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">
-                          {/* CRITICAL FIXED FALLBACK LOGIC LINES */}
                           #{channel.name || channel?.name || channel._doc?.name || 'unnamed'}
                         </p>
                         <p className="text-xs text-gray-400 truncate">
