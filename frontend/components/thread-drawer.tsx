@@ -39,13 +39,13 @@ const NestedComment = ({
         {/* Comment Header */}
         <div className="flex items-start gap-3 group">
           <div className={`w-8 h-8 rounded-full ${comment.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-            {comment.author.charAt(0)}
+            {/* {comment.authorId.name.charAt(0)} */}
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 justify-between">
               <div className="flex items-baseline gap-2">
-                <span className="font-mono font-semibold text-white text-sm">{comment.authorId?.name}</span>
+                {/* <span className="font-mono font-semibold text-white bg-amber-400 text-sm">{comment.authorId?.name}</span> */}
                 <span className="text-xs text-white/50">{comment.timestamp}</span>
               </div>
               {isAdmin && (
@@ -195,7 +195,7 @@ export default function ThreadDrawer({
         </button>
       </div>
 
-      {/* Scrollable Content */}
+     
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         {/* Parent Post - Pinned */}
         <div className="px-6 py-5 border-b border-[#00845C]/50 bg-[#0a0a0a] sticky top-0 z-5">
@@ -211,8 +211,8 @@ export default function ThreadDrawer({
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 justify-between">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-mono font-semibold text-white text-sm">{post.authorId?.name}</span>
-                  <span className="text-xs text-white/50">{post.timestamp}</span>
+                  {/* <span className="font-mono font-semibold text-white text-sm">{post.authorId?.name}</span>
+                  <span className="text-xs text-white/50">{post.createdAt}</span> */}
                 </div>
               </div>
 
@@ -299,4 +299,3 @@ export default function ThreadDrawer({
       </div>
     </div>
   );
-}

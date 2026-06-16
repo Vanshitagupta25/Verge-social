@@ -14,6 +14,7 @@ interface Comment {
   authorId: {
     _id?: string;
     name: string;
+    avatarUrl: string;
   };
   color?: string;
   content: string;
@@ -30,6 +31,7 @@ interface Post {
     _id: string;
     email: string;
     name: string;
+    avatarUrl: string;
   };
   color: string;
   createdAt: string;
@@ -144,11 +146,17 @@ const NestedComment = ({
           {/* Avatar */}
           <div
             className={`w-8 h-8 rounded-full ${comment.color || "bg-emerald-600"
-              } flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+              } flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden`}
           >
-            {comment.authorId?.name
-              ? comment.authorId.name.charAt(0).toUpperCase()
-              : "A"}
+            {comment.authorId?.avatarUrl ? (
+              <img
+                src={comment.authorId.avatarUrl}
+                alt={comment.authorId.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              comment.authorId?.name?.charAt(0).toUpperCase() || "A"
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -165,51 +173,51 @@ const NestedComment = ({
 
               {(isOwner || isAdmin) && (
                 <div
-                className="relative flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() =>
-                    setOpenMenu(
-                      openMenu === comment._id ? null : comment._id
-                    )
-                  }
-                  className="p-1 text-gray-400 hover:text-white rounded"
+                  className="relative flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreVertical size={16} />
-                </button>
+                  <button
+                    onClick={() =>
+                      setOpenMenu(
+                        openMenu === comment._id ? null : comment._id
+                      )
+                    }
+                    className="p-1 text-gray-400 hover:text-white rounded"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
 
-                {openMenu === comment._id && (
-                  <div className="absolute right-0 mt-2 w-32 bg-[#111827] border border-[#374151] rounded-lg shadow-lg z-50 overflow-hidden">
+                  {openMenu === comment._id && (
+                    <div className="absolute right-0 mt-2 w-32 bg-[#111827] border border-[#374151] rounded-lg shadow-lg z-50 overflow-hidden">
 
-                    {isOwner && !comment.editedOnce && (
-                      <button
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditText(comment.content);
-                          setOpenMenu(null);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-[#1f2937]"
-                      >
-                        Edit
-                      </button>
-                    )}
+                      {isOwner && !comment.editedOnce && (
+                        <button
+                          onClick={() => {
+                            setIsEditing(true);
+                            setEditText(comment.content);
+                            setOpenMenu(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-[#1f2937]"
+                        >
+                          Edit
+                        </button>
+                      )}
 
-                    {(isAdmin || isOwner) && (
-                      <button
-                        onClick={() => {
-                          onDelete(comment._id);
-                          setOpenMenu(null);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#1f2937]"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                )}
-               </div>
-              )} 
+                      {(isAdmin || isOwner) && (
+                        <button
+                          onClick={() => {
+                            onDelete(comment._id);
+                            setOpenMenu(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#1f2937]"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* CONTENT OR EDIT BOX */}
@@ -564,8 +572,19 @@ export default function ThreadPage() {
             <div className="flex gap-3 md:gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-full ${post.color || 'bg-blue-600'} flex items-center justify-center text-white text-sm font-bold`}>
-                    {post?.authorId?.name ? post.authorId.name.charAt(0).toUpperCase() : 'A'}
+                  <div
+                    className={`w-10 h-10 rounded-full ${post.color || "bg-blue-600"
+                      } flex items-center justify-center text-white text-sm font-bold overflow-hidden`}
+                  >
+                    {post?.authorId?.avatarUrl ? (
+                      <img
+                        src={post.authorId.avatarUrl}
+                        alt={post.authorId.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      post?.authorId?.name?.charAt(0).toUpperCase() || "A"
+                    )}
                   </div>
                   <div>
                     <span className="font-mono font-semibold text-white">{post?.authorId?.name || 'Anonymous'}</span>

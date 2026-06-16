@@ -25,6 +25,7 @@ export interface Comment {
     _id: string;
     email: string;
     name: string;
+    avatarUrl: string;
   };
   color: string;
   content: string;
