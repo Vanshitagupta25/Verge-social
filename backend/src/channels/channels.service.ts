@@ -10,35 +10,37 @@ export class ChannelsService {
 
   constructor(
     @InjectModel(Channel.name) private readonly channelModel: Model<ChannelDocument>,
-  ) {}
+  ) { }
 
   async create(createChannelDto: CreateChannelDto): Promise<Channel> {
     try {
       const newChannel = new this.channelModel(createChannelDto);
-      console.log("new channel", newChannel);
       return await newChannel.save();
     } catch (error: any) {
       if (error.code === 11000) {
-        throw new ConflictException('A channel with this identifier already exists within the system record.');
+        throw new ConflictException('Channel already exists');
       }
-      this.logger.error(`Database layer fault during creation: ${error.message}`, error.stack);
-      throw new InternalServerErrorException('Failed to process channel state mutation inside MongoDB.');
+      this.logger.error(
+        `Failed to create channel: ${error.message}`
+      );
+      throw new InternalServerErrorException(
+        'Failed to create channel',
+      );
     }
   }
-
   async findAll(): Promise<Channel[]> {
     try {
       return await this.channelModel.find({ isActive: true }).sort({ name: 1 }).exec();
     } catch (error: any) {
-      this.logger.error(`Failed to collect data from collection stream: ${error.message}`);
-      throw new InternalServerErrorException('Data extraction runtime error.');
+      this.logger.error(`Failed to fetch channels: ${error.message}`);
+      throw new InternalServerErrorException('Failed to fetch channels');
     }
   }
 
   async findOne(id: string): Promise<Channel> {
     const channel = await this.channelModel.findById(id).exec();
     if (!channel || !channel.isActive) {
-      throw new NotFoundException(`Requested channel resources for identifier entity ${id} not found.`);
+      throw new NotFoundException('Channel not found');
     }
     return channel;
   }

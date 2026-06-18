@@ -28,7 +28,6 @@ export class PostsService {
       imageUrl: imageUrl || null,
       channelId: finalChannelId,
     });
-    console.log("new post", newPost);
     return newPost.save();
   }
 

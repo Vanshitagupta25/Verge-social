@@ -14,6 +14,4 @@ export class Vote {
   @Prop({ type: String, enum: ['up', 'down'], required: true })
   type: 'up' | 'down';
 }
-
-// 🎯 No unique indexes here anymore so records can accumulate continuously
 export const VoteSchema = SchemaFactory.createForClass(Vote);

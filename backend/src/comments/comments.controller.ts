@@ -34,7 +34,7 @@ export class CommentsController {
   @Get('post/:postId')
   async getCommentsByPost(@Param('postId') postId: string) {
     if (!postId) {
-      throw new BadRequestException('Post ID param is missing!');
+      throw new BadRequestException('Post ID param is missing');
     }
     return this.commentsService.getPostCommentsTree(postId);
   }

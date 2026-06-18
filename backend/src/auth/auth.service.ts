@@ -20,7 +20,6 @@ export class AuthService {
     if (emailExists) {
       throw new ConflictException('Email already registered');
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await this.userModel.create({

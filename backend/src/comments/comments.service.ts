@@ -40,7 +40,7 @@ export class CommentsService {
 
   async getPostCommentsTree(postId: string) {
     if (!Types.ObjectId.isValid(postId)) {
-      throw new BadRequestException(`Received an invalid MongoDB ObjectId string: "${postId}"`);
+      throw new BadRequestException('Received an invalid MongoDB ObjectId');
     }
     const allComments = await this.commentModel
       .find({ postId: new Types.ObjectId(postId) })
@@ -49,7 +49,7 @@ export class CommentsService {
       .lean()
       .exec();
 
-    const commentMap: { [Key: string]: any } = {};
+    const commentMap: { [Key: string]: any } = {}; //create lookup table for access comment by id
     const commentTree: any[] = [];
 
     allComments.forEach((comment) => {
@@ -83,9 +83,6 @@ export class CommentsService {
     }
     if (comment.authorId.toString() !== currentUser?.id) {
       throw new ForbiddenException('You are not authorized to edit this comment');
-    }
-    if (comment.editedOnce) {
-     throw new ForbiddenException("You can edit only once");
     }
     comment.content = newContent;
     await comment.save();
