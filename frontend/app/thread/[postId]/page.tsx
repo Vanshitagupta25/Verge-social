@@ -102,6 +102,7 @@ const NestedComment = ({
   }
 
   const isOwner = currentUserId && comment.authorId?._id ? String(comment.authorId._id) === String(currentUserId) : false;
+  console.log("isowner", isOwner);
 
   const handleSaveEdit = async () => {
     if (!editText.trim() || editText === comment.content) {
@@ -309,7 +310,6 @@ export default function ThreadPage() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
@@ -324,6 +324,7 @@ export default function ThreadPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isAdmin = userRole === 'admin';
+  console.log("isadmin", isAdmin);
 
   useEffect(() => {
     console.log("Modal:", isDeleteModalOpen);
@@ -371,7 +372,7 @@ export default function ThreadPage() {
 
         await refreshComments();
       } catch (error) {
-        console.error('Error fetching data from API, looking for local fallback:', error);
+        console.error('Error fetching data from API', error);
 
         const savedPosts = localStorage.getItem('verge_posts');
         const savedComments = localStorage.getItem('verge_comments');

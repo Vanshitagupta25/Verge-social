@@ -393,9 +393,9 @@ export default function Feed({
     try {
       await onUpdatePost(postId, editText);
 
-    setIsUpdating(false);
-    setEditingPostId(null);
-    setEditText('');
+      setIsUpdating(false);
+      setEditingPostId(null);
+      setEditText('');
     } catch (err) {
       console.error(err);
     } finally {
@@ -451,17 +451,6 @@ export default function Feed({
 
             const imageSrc = post.imageUrl;
 
-
-            const isOwner =
-              currentUser && post.authorId?._id
-                ? String(post.authorId?._id) === String(currentUser)
-                : false;
-            console.log("isowner", isOwner)
-
-
-            const isAdmin = userRole === "admin";
-            console.log("isadmin", isAdmin);
-
             const postAuthorIdStr =
               post.authorId && typeof post.authorId === "object"
                 ? post.authorId._id
@@ -478,6 +467,13 @@ export default function Feed({
                   ? post.authorId.name
                   : post.author || "Anonymous";
 
+            const isOwner =
+              currentUserIdStr && post.authorId?._id
+                ? String(post.authorId?._id) === String(currentUserIdStr)
+                : false;
+
+            const isAdmin = currentUser?.role === "admin";
+
             const authorAvatar =
               post.authorId && typeof post.authorId === "object"
                 ? post.authorId.avatarUrl
@@ -487,8 +483,8 @@ export default function Feed({
               <div
                 ref={i === posts.length - 1 ? lastPostRef : null}
                 key={postKey}
-                onClick={(e) =>{
-                  if(editingPostId === post._id) return;
+                onClick={(e) => {
+                  if (editingPostId === post._id) return;
                   navigateToThread(e, post._id);
                 }}
                 className="px-3 py-2 border-b border-[#2d3748] cursor-pointer"
@@ -522,9 +518,10 @@ export default function Feed({
                         {getRelativeTime(post.createdAt || "")}
                       </span>
                     </div>
-                    <div
+                    {(isOwner || isAdmin) && (
+                        <div
                       className="relative ml-auto"
-                      
+
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
@@ -543,8 +540,9 @@ export default function Feed({
 
                       {openMenu === post._id && (
                         <div className="absolute right-0 top-full mt-1 w-28 bg-black border border-gray-700 rounded-md shadow-xl z-[9999]">
-
-                          <button
+                          
+                          {isOwner && (
+                            <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditCLick(e, post._id, post);
@@ -554,7 +552,10 @@ export default function Feed({
                             Edit
                           </button>
 
-                          <button
+                          )}
+                          
+                          {(isOwner || isAdmin) && (
+                            <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteClick(e, post._id);
@@ -564,9 +565,15 @@ export default function Feed({
                             Delete
                           </button>
 
+                          )}
+                          
+
                         </div>
                       )}
                     </div>
+
+                    )}
+                  
                   </div>
                   {editingPostId === post._id ? (
                     <div className="mt-2 relative">
@@ -737,11 +744,6 @@ export default function Feed({
             setPostToDelete(null);
           }}
           onConfirm={handleConfirmDelete}
-          title={
-            currentUser?.role === 'admin'
-              ? "Admin: Delete Post?"
-              : "Delete Post?"
-          }
           description="Are you sure you want to permanently delete this post from the platform? This action cannot be undone."
         />
       </div>
