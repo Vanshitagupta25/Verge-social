@@ -318,12 +318,12 @@ export default function Feed({
     setEditingPostId(_id);
     setEditText(post.content);
     setOpenMenu(null);
-    toast.success("button is working");
   }
   const handleDeleteClick = (e: React.MouseEvent, _id: string) => {
     e.stopPropagation();
     setPostToDelete(_id);
     setIsDeleteModalOpen(true);
+    setOpenMenu(null);
   };
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
