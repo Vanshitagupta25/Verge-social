@@ -18,7 +18,7 @@ const BACKEND_URL = 'https://instant-plsl.onrender.com';
 export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateAvatar, onLogout }: ProfileToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingUsername, setEditingUsername] = useState(false);
-  const [usernameInput, setUsernameInput] = useState(currentUser?.username || currentUser?.name || '');
+  const [usernameInput, setUsernameInput] = useState(currentUser?.username || currentUser?.username || '');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -194,7 +194,6 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
 
   return (
     <div className="relative" ref={componentRef}>
-      {/* Pill Layout Button wrapper */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

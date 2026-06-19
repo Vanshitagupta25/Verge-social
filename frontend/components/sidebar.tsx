@@ -61,10 +61,10 @@ export default function Sidebar({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowCreateModal(true)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] hover:from-[#00A870]/90 hover:to-[#006239]/90 text-white font-semibold transition-all duration-200 text-xs shadow-lg hover:shadow-[#00A870]/30"
+          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] hover:to-[#006239]/90 text-white font-semibold transition-all duration-200 text-xs shadow-lg"
         >
           <Plus size={16} />
-          <span>Create Channel</span>
+          <span>Create Community</span>
         </motion.button>
         <p className="text-[10px] text-gray-600 mt-1 text-center">Admin / User Feature</p>
       </div>

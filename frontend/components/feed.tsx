@@ -1,6 +1,6 @@
 'use client'
-import { MessageCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { MessageCircle, ArrowBigDown, ArrowBigUp, MoreHorizontal } from 'lucide-react';
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import type { Post, Comment, Channel, User } from '@/app/page';
 import AuthScreen from '@/components/auth-screen';
@@ -19,6 +19,7 @@ interface FeedProps {
   activeChannelId: string | null;
   onCreatePost: (newPost: any) => void;
   onDeletePost: (id: string) => Promise<void>;
+  onUpdatePost: (id: string, content: string,) => Promise<void>;
   onAddComment: (id: string, content: string, parentId: string | null) => Promise<void>;
   onDeleteComment: (commentId: number, postId: string) => Promise<void>;
   currentUser: User | null;
@@ -39,7 +40,7 @@ export default function Feed({
   isAuthenticated,
   onAuthenticate,
   onLogout,
-  onCreatePost,
+  onUpdatePost,
   onUpdateUsername,
   onUpdateAvatar,
   onOpenSearch,
@@ -56,10 +57,19 @@ export default function Feed({
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [userUpvotes, setUserUpvotes] = useState<Record<string, boolean>>({});
   const [userDownvotes, setUserDownvotes] = useState<Record<string, boolean>>({});
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const metrics = lightboxImage?.postId
     ? postMetrics[lightboxImage.postId]
     : undefined;
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const editInputRef = useRef<HTMLTextAreaElement>(null);
+
   const fetchPosts = useCallback(
     async (currentCursor?: string, isChannelSwitch = false) => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -114,6 +124,34 @@ export default function Feed({
     },
     [activeChannelId, setPosts, isAuthenticated, loading]
   );
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    };
+    if (openMenu) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [openMenu]);
+
+  useEffect(() => {
+    if (editingPostId && editInputRef.current) {
+      editInputRef.current.focus()
+
+      const len = editText.length;
+      editInputRef.current.setSelectionRange(len, len)
+
+      const textarea = editInputRef.current;
+
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`
+    }
+  }, [editingPostId]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -176,28 +214,29 @@ export default function Feed({
   const handleUpvote = async (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
 
-    const isAlreadyUpvoted = !!userUpvotes[postId];
-    const upvoteDelta = isAlreadyUpvoted ? -1 : 1;
-
-    setUserUpvotes((prev) => ({ ...prev, [postId]: !isAlreadyUpvoted }));
-
-    const previousMetrics = { ...postMetrics };
-    setPostMetrics((prev) => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        upvotesCount: Math.max(0, (prev[postId]?.upvotesCount || 0) + upvoteDelta),
-        downvotesCount: prev[postId]?.downvotesCount || 0,
-        comments: prev[postId]?.comments || 0,
-      },
-    }));
-
     try {
-      await api.post(`votes/${postId}/upvote`);
+      const { data } = await api.post(`votes/${postId}/upvote`);
+      console.log('Vote response:', data);
+      setPostMetrics((prev) => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          upvotesCount: data.upvotesCount,
+          downvotesCount: data.downvotesCount,
+        },
+      }))
+      setUserUpvotes((prev) => ({
+        ...prev,
+        [postId]: !prev[postId],
+      }));
+
+      setUserDownvotes((prev) => ({
+        ...prev,
+        [postId]: false,
+      }));
+
     } catch (err) {
       console.error(err);
-      setPostMetrics(previousMetrics);
-      setUserUpvotes((prev) => ({ ...prev, [postId]: isAlreadyUpvoted }));
       toast.error('Failed to register upvote');
     }
   };
@@ -205,28 +244,28 @@ export default function Feed({
   const handleDownvote = async (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
 
-    const isAlreadyDownvoted = !!userDownvotes[postId];
-    const downvoteDelta = isAlreadyDownvoted ? -1 : 1;
-
-    setUserDownvotes((prev) => ({ ...prev, [postId]: !isAlreadyDownvoted }));
-
-    const previousMetrics = { ...postMetrics };
-    setPostMetrics((prev) => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        upvotesCount: prev[postId]?.upvotesCount || 0,
-        downvotesCount: Math.max(0, (prev[postId]?.downvotesCount || 0) + downvoteDelta),
-        comments: prev[postId]?.comments || 0,
-      },
-    }));
-
     try {
-      await api.post(`votes/${postId}/downvote`);
+      const { data } = await api.post(`votes/${postId}/downvote`);
+      console.log('Vote response:', data);
+      setPostMetrics((prev) => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          upvotesCount: data.upvotesCount,
+          downvotesCount: data.downvotesCount,
+        },
+      }))
+      setUserDownvotes((prev) => ({
+        ...prev,
+        [postId]: !prev[postId],
+      }));
+
+      setUserUpvotes((prev) => ({
+        ...prev,
+        [postId]: false,
+      }));
     } catch (err) {
       console.error(err);
-      setPostMetrics(previousMetrics);
-      setUserDownvotes((prev) => ({ ...prev, [postId]: isAlreadyDownvoted }));
       toast.error('Failed to register downvote');
     }
   };
@@ -274,6 +313,13 @@ export default function Feed({
   const getDownvoteCount = (postId: string) => {
     return postMetrics[postId]?.downvotesCount || 0;
   };
+  const handleEditCLick = async (e: React.MouseEvent, _id: string, post: Post) => {
+    e.stopPropagation();
+    setEditingPostId(_id);
+    setEditText(post.content);
+    setOpenMenu(null);
+    toast.success("button is working");
+  }
   const handleDeleteClick = (e: React.MouseEvent, _id: string) => {
     e.stopPropagation();
     setPostToDelete(_id);
@@ -296,7 +342,6 @@ export default function Feed({
         toast.error('Authentication token not found. Please log in again.');
         throw new Error('Token missing');
       }
-
       const response = await axios.delete(
         `https://instant-plsl.onrender.com/posts/${id}`,
         {
@@ -323,12 +368,6 @@ export default function Feed({
       setLoading(false);
     }
   };
-  const resolveImageUrl = (url: string | null | undefined) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${url.replace(/^\//, '')}`;
-  };
-
   // Animation variants
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -343,6 +382,25 @@ export default function Feed({
   const shouldTruncate = (content?: string) => {
     if (!content) return false;
     return content.length > TEXT_TRUNCATE_LIMIT;
+  };
+  const handleSaveEdit = async (postId: string, content: string) => {
+    if (!editText.trim() || editText === content) {
+      setIsUpdating(false);
+      return;
+    }
+    setIsUpdating(true);
+
+    try {
+      await onUpdatePost(postId, editText);
+
+    setIsUpdating(false);
+    setEditingPostId(null);
+    setEditText('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUpdating(false);
+    }
   };
   const getTruncatedContent = (content?: string) => {
     if (!content) return '';
@@ -383,164 +441,273 @@ export default function Feed({
       />
 
       {/* Scrollable Feed */}
-      <div className="flex-1 overflow-auto py-3 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <div className="space-y-3 px-3 md:px-5 max-w-xl">
+      <div className="flex-1 overflow-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" ref={menuRef}>
+        <div className="px-2 md:px-4">
           {posts.map((post, i) => {
-            const postKey = post._id && post._id !== "" ? post._id : `new-post-fallback-${i}`;
+            const postKey =
+              post._id && post._id === ""
+                ? post._id
+                : `new-post-fallback-${i}`;
 
-            const imageSrc = resolveImageUrl(post.imageUrl);
+            const imageSrc = post.imageUrl;
 
-            const postAuthorIdStr = post.authorId && typeof post.authorId === 'object'
-              ? post.authorId._id
-              : post.authorId;
+
+            const isOwner =
+              currentUser && post.authorId?._id
+                ? String(post.authorId?._id) === String(currentUser)
+                : false;
+            console.log("isowner", isOwner)
+
+
+            const isAdmin = userRole === "admin";
+            console.log("isadmin", isAdmin);
+
+            const postAuthorIdStr =
+              post.authorId && typeof post.authorId === "object"
+                ? post.authorId._id
+                : post.authorId;
 
             const currentUserIdStr = currentUser?._id;
 
-            const authorName = postAuthorIdStr && currentUserIdStr && postAuthorIdStr === currentUserIdStr
-              ? (currentUser.username)
-              : (post.authorId && typeof post.authorId === 'object' ? post.authorId.name : (post.author || 'Anonymous'));
+            const authorName =
+              postAuthorIdStr &&
+                currentUserIdStr &&
+                postAuthorIdStr === currentUserIdStr
+                ? currentUser.username
+                : post.authorId && typeof post.authorId === "object"
+                  ? post.authorId.name
+                  : post.author || "Anonymous";
 
             const authorAvatar =
               post.authorId && typeof post.authorId === "object"
                 ? post.authorId.avatarUrl
                 : null;
 
-            const canDelete =
-              currentUser?.role === 'admin' ||
-              (postAuthorIdStr && currentUserIdStr && postAuthorIdStr === currentUserIdStr);
-
             return (
               <div
                 ref={i === posts.length - 1 ? lastPostRef : null}
                 key={postKey}
-                onClick={(e) => navigateToThread(e, post._id)}
-                className="p-4 md:p-6 hover:bg-transparent border-b border-[#2d3748] rounded-none cursor-pointer group"
+                onClick={(e) =>{
+                  if(editingPostId === post._id) return;
+                  navigateToThread(e, post._id);
+                }}
+                className="px-3 py-2 border-b border-[#2d3748] cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
 
-                  <div className="flex items-center gap-3 mb-3 justify-between">
-                    <div className="flex items-center gap-3">
+                  {/* Author Row */}
+                  <div className="flex items-center mb-1">
+                    <div className="flex items-center gap-2 min-w-0">
+
                       {authorAvatar ? (
                         <img
                           src={authorAvatar}
                           alt={authorName}
-                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                          className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
                         <div
                           className={`w-8 h-8 rounded-full ${post.color || "bg-emerald-600"
-                            } flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+                            } flex items-center justify-center text-white text-xs font-bold`}
                         >
-                          {authorName ? authorName.charAt(0).toUpperCase() : "P"}
+                          {authorName?.charAt(0).toUpperCase()}
                         </div>
                       )}
 
-                      <span className="font-mono font-semibold text-white text-sm">
+                      <span className="font-medium text-white text-sm">
                         {authorName}
                       </span>
 
                       <span className="text-xs text-gray-500">
-                        · {getRelativeTime(post.createdAt || '')}
+                        {getRelativeTime(post.createdAt || "")}
                       </span>
                     </div>
-
-                    {canDelete && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(e, post._id);
-                        }}
-                        className="p-1.5 transition-all duration-200 rounded-lg text-red-400 hover:bg-red-500/10 cursor-pointer"
-                        title="Delete Post"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-200 leading-relaxed">
-                      {shouldTruncate(post.content || '') && !expandedPosts[post._id]
-                        ? getTruncatedContent(post.content || '')
-                        : post.content}
-                    </p>
-
-                    {shouldTruncate(post.content || '') && (
+                    <div
+                      className="relative ml-auto"
+                      
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleExpand(e, post._id)
+                          setOpenMenu(
+                            openMenu === post._id
+                              ? null
+                              : post._id
+                          );
                         }}
-                        className="mt-2 text-sm font-medium text-[#00A870]"
+                        className="p-1 text-gray-500 hover:text-white"
                       >
-                        {expandedPosts[post._id] ? 'Read Less' : 'Read More'}
+                        <MoreHorizontal size={16} />
                       </button>
-                    )}
+
+                      {openMenu === post._id && (
+                        <div className="absolute right-0 top-full mt-1 w-28 bg-black border border-gray-700 rounded-md shadow-xl z-[9999]">
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCLick(e, post._id, post);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-white hover:bg-gray-800"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(e, post._id);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-red-400 hover:bg-gray-800"
+                          >
+                            Delete
+                          </button>
+
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  {editingPostId === post._id ? (
+                    <div className="mt-2 relative">
+                      <textarea
+                        ref={editInputRef}
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        disabled={isUpdating}
+                        className="w-full  border border-[#374151] rounded-2xl px-3 py-4 pr-24 text-sm text-white focus:outline-none focus:border-[#374151]
+                        resize-none overflow-hidden"
+                      />
+                      <div className="bottom-1.5 right-2 flex gap-2">
+                        <button
+                          onClick={() => handleSaveEdit(post._id, post.content)}
+                          disabled={isUpdating}
+                          className="px-3 py-1 text-xs bg-[#00A870] text-white rounded-lg hover:bg-[#00A870]/80 disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setIsUpdating(false)
+                            setEditingPostId(null)
+                            setEditText('');
+                          }}
+                          disabled={isUpdating}
+                          className="px-3 py-1 text-xs bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-1">
+                      <p className="text-sm text-gray-200 leading-5 whitespace-pre-wrap">
+                        {shouldTruncate(post.content || "") &&
+                          !expandedPosts[post._id]
+                          ? getTruncatedContent(post.content || "")
+                          : post.content}
+                      </p>
+
+                      {shouldTruncate(post.content || "") && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpand(e, post._id);
+                          }}
+                          className="mt-1 text-sm font-medium text-[#00A870]"
+                        >
+                          {expandedPosts[post._id]
+                            ? "Read Less"
+                            : "Read More"}
+                        </button>
+                      )}
+                    </div>
+
+                  )}
+
+
                   {imageSrc && (
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        openLightbox(e, { ...post, imageUrl: imageSrc });
+                        openLightbox(e, {
+                          ...post,
+                          imageUrl: imageSrc,
+                        });
                       }}
-                      className="mb-4 w-full max-w-[520px] rounded-xl overflow-hidden bg-[#374151] cursor-pointer"
+                      className="mt-1 mb-2 w-full max-w-[520px] rounded-lg overflow-hidden bg-[#374151] cursor-pointer"
                     >
                       <img
                         src={imageSrc}
                         alt="Post media"
                         className="w-full h-auto max-h-[70vh] object-contain"
-                        onError={() => {
-                        }}
                       />
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 md:gap-6 pt-1 text-xs font-medium">
-                    <div className="flex items-center gap-1.5 text-gray-400">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUpvote(e, post._id)
-                        }}
-                        className={`p-1.5 rounded-lg transition-colors ${userUpvotes[post._id]
-                          ? 'bg-[#00A870]/30 text-[#00A870]'
-                          : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
-                          }`}
-                      >
-                        <ChevronUp size={18} />
-                      </button>
-                      <span className={userUpvotes[post._id] ? 'text-[#00A870]' : ''}>
-                        {getUpvoteCount(post._id)}
-                      </span>
-                    </div>
+                  {/* Metrics */}
+                  <div className="flex items-center gap-2 text-xs font-medium">
 
-                    <div className="flex items-center gap-1.5 text-gray-400">
+                    <div
+                      className={`flex items-center border rounded-full mt-2 px-1 py-[2px]
+                ${userUpvotes[post._id]
+                          ? "bg-red-500 border-red-500 text-white"
+                          : userDownvotes[post._id]
+                            ? "bg-[#006239] text-white"
+                            : "bg-gray-800 border-gray-700 text-gray-400"
+                        }`}
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownvote(e, post._id)
+                          handleUpvote(e, post._id);
                         }}
-                        className={`p-1.5 rounded-lg transition-colors ${userDownvotes[post._id]
-                          ? 'bg-red-500/30 text-red-400'
-                          : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
-                          }`}
+                        className="p-0.5 rounded-full"
                       >
-                        <ChevronDown size={18} />
+                        <ArrowBigUp
+                          size={18}
+                          fill={
+                            userUpvotes[post._id]
+                              ? "currentColor"
+                              : "none"
+                          }
+                          strokeWidth={2}
+                        />
                       </button>
-                      <span className={userDownvotes[post._id] ? 'text-red-400' : ''}>
-                        {getDownvoteCount(post._id)}
+
+                      <span className="min-w-[24px] text-center text-sm font-semibold">
+                        {getUpvoteCount(post._id) -
+                          getDownvoteCount(post._id)}
                       </span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownvote(e, post._id);
+                        }}
+                        className="p-0.5 rounded-full"
+                      >
+                        <ArrowBigDown
+                          size={18}
+                          fill={
+                            userDownvotes[post._id]
+                              ? "currentColor"
+                              : "none"
+                          }
+                          strokeWidth={2}
+                        />
+                      </button>
                     </div>
 
                     <button
-                      className="flex items-center gap-1.5 text-gray-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                      className="flex items-center gap-1 text-gray-400 hover:text-white border border-gray-700 rounded-full px-2 py-1 mt-2 bg-gray-800 transition-colors"
                     >
-                      <MessageCircle size={18} />
-                      <span>{post?.commentsCount ?? 0}</span>
+                      <MessageCircle size={16} />
+                      <span>{post.commentsCount}</span>
                     </button>
-                  </div>
 
+                  </div>
                 </div>
               </div>
             );

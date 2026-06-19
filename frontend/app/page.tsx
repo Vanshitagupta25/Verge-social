@@ -123,14 +123,14 @@ export default function Page() {
   }, [isAuthenticated]);
 
   const addChannel = async (name: string, description: string) => {
-      if (!description.trim()) {
-    toast.error("Channel description is mandatory.");
-    return;
-  }
-  if (description.trim().length < 10 || description.trim().length > 200) {
-    toast.error("Description must be between 10 and 200 characters.");
-    return;
-  }
+    if (!description.trim()) {
+      toast.error("Channel description is mandatory.");
+      return;
+    }
+    if (description.trim().length < 10 || description.trim().length > 200) {
+      toast.error("Description must be between 10 and 200 characters.");
+      return;
+    }
     try {
       const response = await api.post('/channels', { name, description });
 
@@ -152,24 +152,24 @@ export default function Page() {
   };
 
   const addPost = (newPost: Post) => {
-  const formattedPost: Post = {
-    ...newPost,
-    imageUrl: newPost.imageUrl
-  ? (newPost.imageUrl.startsWith('http')
-      ? newPost.imageUrl
-      : `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${newPost.imageUrl.replace(/^\//, '')}`)
-  : undefined,
-    
-    authorId: typeof newPost.authorId === 'string' ? {
-      _id: newPost.authorId,
-      name: currentUser?.username || currentUser?.name || 'You'
-    } : newPost.authorId,
-    author: newPost.author || currentUser?.username || 'You'
+    const formattedPost: Post = {
+      ...newPost,
+      imageUrl: newPost.imageUrl
+        ? (newPost.imageUrl.startsWith('http')
+          ? newPost.imageUrl
+          : `https://res.cloudinary.com/dytms6dh7/image/upload/posts/${newPost.imageUrl.replace(/^\//, '')}`)
+        : undefined,
+
+      authorId: typeof newPost.authorId === 'string' ? {
+        _id: newPost.authorId,
+        name: currentUser?.username || currentUser?.name || 'You'
+      } : newPost.authorId,
+      author: newPost.author || currentUser?.username || 'You'
+    };
+    setPosts((prev) => [formattedPost, ...prev]);
+
+    setShowPostCreation(false);
   };
-  setPosts((prev) => [formattedPost, ...prev]); 
-  
-  setShowPostCreation(false);
-};
   const addComment = async (postId: string, content: string, parentId: string | null = null) => {
     try {
       const response = await api.post('/comments', {
@@ -189,7 +189,30 @@ export default function Page() {
       toast.error('Comment not saved');
     }
   };
+  const updatePost = async (
+    _id: string,
+    content: string
+  ) => {
+    try {
+      const token = localStorage.getItem('token');
 
+      await api.patch(`https://instant-plsl.onrender.com/posts/${_id}`,
+        { content }, {
+        data: { token }
+      });
+      setPosts((prevPosts) => prevPosts.map((post) => post._id !== _id ? {
+        ...post,
+        content: content,
+      }
+        :
+        post
+      ));
+      toast.success('Post successfully updated');
+    } catch (error) {
+      console.error("update handler error:", error);
+      toast.error('No access to update');
+    };
+  }
   const deletePost = async (_id: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -215,7 +238,6 @@ export default function Page() {
         )
       );
       toast.success('Comment deleted');
-
     } catch (error) {
       toast.error('No Access for Comment Delete!');
     }
@@ -303,6 +325,7 @@ export default function Page() {
           currentUser={currentUser}
           onDeletePost={deletePost}
           onAddComment={addComment}
+          onUpdatePost={updatePost}
           onDeleteComment={deleteComment}
           onAuthenticate={handleAuthenticate}
           onUpdateAvatar={handleUpdateAvatar}

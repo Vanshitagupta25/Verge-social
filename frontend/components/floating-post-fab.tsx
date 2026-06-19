@@ -19,11 +19,13 @@ export default function FloatingPostFAB({ onClick, isVisible = true }: FloatingP
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onClick}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] hover:from-[#00A870]/90 hover:to-[#006239]/90 text-white font-semibold shadow-lg hover:shadow-[#00A870]/50 transition-all"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-[#00A870] to-[#006239] text-white font-semibold shadow-lg transition-all"
         >
           <Plus className="text-white font-bold" size={20} />
         </motion.button>
       )}
+
+      
     </AnimatePresence>
   );
 }

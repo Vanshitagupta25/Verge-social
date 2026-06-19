@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Check, Search } from 'lucide-react';
+import { ArrowRight, Check, Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Channel } from '@/app/page';
 import { useState } from 'react';
@@ -21,21 +21,17 @@ export default function ChannelOnboarding({
 
   const [searchTerm, setSearchTerm] = useState('');
 
- const filteredChannels = channels.filter((channel) => {
-  const matched =
-    channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (channel.description ?? '')
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+  const filteredChannels = channels.filter((channel) => {
+    const matched =
+      channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (channel.description ?? '')
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-  console.log(channel.name, matched);
+    console.log(channel.name, matched);
 
-  return matched;
-});
-  console.log("filtered channels", filteredChannels);
-  console.log("search term", searchTerm);
-  console.log("channels", channels);
-
+    return matched;
+  });
   const VergeLogoSVG = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block">
       <path d="M4 4H9L14 15L19 4H24L16.5 20.5H11.5L4 4Z" fill="currentColor" />
@@ -61,7 +57,7 @@ export default function ChannelOnboarding({
         </div>
 
         {/*search bar */}
-        <div className="relative">
+        <div className="relative w-full">
           <Search
             size={18}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -74,6 +70,14 @@ export default function ChannelOnboarding({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-1 bg-[#111827] border border-[#374151] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#00A870] focus:ring-1 focus:ring-[#00A870]"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
 

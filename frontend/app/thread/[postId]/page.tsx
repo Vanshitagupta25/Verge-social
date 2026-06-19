@@ -3,7 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MessageCircle, Trash2, MoreVertical, Reply, Send, X, Edit3, Check } from 'lucide-react';
+import { ArrowLeft, MessageCircle, MoreVertical, Reply, Send, X } from 'lucide-react';
+import { DeleteModal } from '@/components/DeleteModal';
 import api from '@/app/api/api';
 import toast from 'react-hot-toast';
 
@@ -64,15 +65,26 @@ const NestedComment = ({
   const [editText, setEditText] = useState(comment.content);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [editLimitUsed, setEditLimitUsed] = useState<Record<string, boolean>>({});
 
   const indentClass = depth > 0 ? 'ml-6 md:ml-8' : '';
   const borderClass = depth > 0 ? 'border-l-2 border-[#374151] hover:border-[#00A870]/50 pl-4 transition-colors' : '';
 
-  const canEdit = (comment: any) => {
-    return isOwner && !comment.editedOnce;
-  };
   const inputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    };
+    if (openMenu) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [openMenu]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -83,25 +95,23 @@ const NestedComment = ({
     }
   }, [isEditing]);
 
+  const handleButtonEdit = async () => {
+    setIsEditing(true);
+    setEditText(comment.content);
+    setOpenMenu(null);
+  }
+
   const isOwner = currentUserId && comment.authorId?._id ? String(comment.authorId._id) === String(currentUserId) : false;
-  console.log("isOwner", isOwner);
-  console.log("currentuserId", currentUserId);
 
   const handleSaveEdit = async () => {
     if (!editText.trim() || editText === comment.content) {
       setIsEditing(false);
       return;
     }
-    if (comment.editedOnce) {
-      setIsEditing(false);
-      return;
-    }
-
     setIsSavingEdit(true);
 
     try {
       await onEdit(comment._id, editText);
-      comment.editedOnce = true;
 
       setIsEditing(false);
     } catch (err) {
@@ -133,8 +143,6 @@ const NestedComment = ({
       return `${days} ${days === 1 ? 'day' : 'days'} ago`;
     }
   };
-
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -173,7 +181,7 @@ const NestedComment = ({
 
               {(isOwner || isAdmin) && (
                 <div
-                  className="relative flex-shrink-0"
+                  className="relative flex-shrink-0" ref={menuRef}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
@@ -185,17 +193,16 @@ const NestedComment = ({
                     className="p-1 text-gray-400 hover:text-white rounded"
                   >
                     <MoreVertical size={16} />
+
                   </button>
 
                   {openMenu === comment._id && (
                     <div className="absolute right-0 mt-2 w-32 bg-[#111827] border border-[#374151] rounded-lg shadow-lg z-50 overflow-hidden">
 
-                      {isOwner && !comment.editedOnce && (
+                      {isOwner && (
                         <button
                           onClick={() => {
-                            setIsEditing(true);
-                            setEditText(comment.content);
-                            setOpenMenu(null);
+                            handleButtonEdit();
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-[#1f2937]"
                         >
@@ -205,9 +212,10 @@ const NestedComment = ({
 
                       {(isAdmin || isOwner) && (
                         <button
+
                           onClick={() => {
+                            console.log("delete menu clicked", comment._id);
                             onDelete(comment._id);
-                            setOpenMenu(null);
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#1f2937]"
                         >
@@ -223,7 +231,6 @@ const NestedComment = ({
             {/* CONTENT OR EDIT BOX */}
             {isEditing ? (
               <div className="mt-2 relative">
-                {/* INPUT */}
                 <input
                   ref={inputRef}
                   type="text"
@@ -232,8 +239,6 @@ const NestedComment = ({
                   disabled={isSavingEdit}
                   className="w-full bg-[#1f2937] border border-[#374151] rounded-2xl px-4 py-6 pr-24 text-sm text-white focus:outline-none focus:border-[#00A870]"
                 />
-
-                {/* BUTTONS INSIDE INPUT */}
                 <div className="absolute bottom-1.5 right-2 flex gap-2">
                   <button
                     onClick={handleSaveEdit}
@@ -304,7 +309,11 @@ export default function ThreadPage() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -315,7 +324,10 @@ export default function ThreadPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isAdmin = userRole === 'admin';
-  console.log("isadmin", isAdmin);
+
+  useEffect(() => {
+    console.log("Modal:", isDeleteModalOpen);
+  }, [isDeleteModalOpen]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -397,7 +409,6 @@ export default function ThreadPage() {
         parentId: replyingTo?.id || null,
         content: replyContent,
       });
-      console.log("response", response);
 
       await refreshComments();
       toast.success('Reply submitted!');
@@ -463,6 +474,10 @@ export default function ThreadPage() {
       throw error;
     }
   };
+  const handleDeleteClick = (commentId: string) => {
+    setCommentToDelete(commentId);
+    setIsDeleteModalOpen(true);
+  };
   const handleDeleteComment = async (commentId: string) => {
     const previousComments = [...comments];
 
@@ -488,7 +503,6 @@ export default function ThreadPage() {
     } catch (error) {
       console.error('Error deleting comment locally:', error);
     }
-
     try {
       await api.delete(`comments/${commentId}`);
       toast.success('Comment deleted');
@@ -497,6 +511,16 @@ export default function ThreadPage() {
       console.error('API call to delete comment failed:', error);
       toast.error('Failed to delete comment');
       setComments(previousComments);
+    }
+  };
+  const handleConfirmDelete = async () => {
+    if (!commentToDelete) return;
+    try {
+      await handleDeleteComment(commentToDelete);
+
+    } finally {
+      setCommentToDelete(null);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -634,7 +658,7 @@ export default function ThreadPage() {
                   depth={0}
                   isAdmin={isAdmin}
                   onReply={handleReplyToComment}
-                  onDelete={handleDeleteComment}
+                  onDelete={handleDeleteClick}
                   onEdit={handleEditComment}
                   currentUserId={currentUserId}
                 />
@@ -697,6 +721,19 @@ export default function ThreadPage() {
           </div>
         </div>
       </motion.div>
+      <div className="bg-[#111827] text-white">
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          isLoading={loading}
+          onClose={() => {
+            setIsDeleteModalOpen(false)
+            setCommentToDelete(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete Comment?"
+          description="Are you sure you want to permanently delete this post from the platform? This action cannot be undone."
+        />
+      </div>
     </div>
   );
 }
