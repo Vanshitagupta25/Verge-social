@@ -105,7 +105,8 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
         }
         setEditingUsername(false);
       }
-    toast.success("Profile updated successfully");
+      toast.success("Profile updated successfully");
+      setIsOpen(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
     } finally {
@@ -125,6 +126,18 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only image files are allowed!');
+      return;
+    }
 
     setAvatarPreview(URL.createObjectURL(file));
     setLoading(true);
@@ -152,7 +165,8 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
           localStorage.setItem('user', JSON.stringify({ ...parsed, avatarUrl: updatedUser.avatarUrl }));
         }
       }
-       toast.success("Profile updated successfully");
+      toast.success("Profile updated successfully");
+      setIsOpen(false);
     } catch (error) {
       console.error('Failed to upload avatar:', error);
       setAvatarPreview(null);
@@ -186,11 +200,11 @@ export default function ProfileToggle({ currentUser, onUpdateUsername, onUpdateA
   const currentDisplayName = currentUser.username || 'User';
 
   const initials = currentDisplayName
-  .split(' ')
-  .filter(Boolean)
-  .slice(0, 2)
-  .map(word => word[0].toUpperCase())
-  .join('');
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(word => word[0].toUpperCase())
+    .join('');
 
   return (
     <div className="relative" ref={componentRef}>
