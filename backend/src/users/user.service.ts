@@ -9,6 +9,18 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<User>
   ) {}
 
+  async getUserConnectedChannels(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .populate('channels', 'name description isActive')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('User profile not found.');
+    }
+    return user.channels;
+  }
+
   async updateProfileFields(userId: string, payload: any) {
     delete payload.role;
     delete payload.email;

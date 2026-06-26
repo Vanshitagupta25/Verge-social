@@ -1,13 +1,25 @@
-import { Controller, Patch, Body, UseInterceptors, UploadedFile, BadRequestException, UseGuards, Req } from '@nestjs/common';
+import { Controller, Patch, Body, Get, UseInterceptors, UploadedFile, BadRequestException, UseGuards, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './user.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-
+///api design for how many channel is connected to that user
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
+
+  @Get('channels')
+  @UseGuards(AuthGuard)
+  async getUserChannels(@Req() req: any) {
+    const user = req.user;
+    if (!user) {
+      throw new BadRequestException('User authentication context missing.');
+    }
+    const currentUserId = user.id || user._id || user.sub;
+
+    return this.usersService.getUserConnectedChannels(currentUserId);
+  }
 
   @Patch('profile')
   @UseGuards(AuthGuard)

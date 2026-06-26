@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -20,6 +20,9 @@ export class User {
 
   @Prop()
   avatarUrl!: string;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Channel' }], default: [] })
+  channels!: MongooseSchema.Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
