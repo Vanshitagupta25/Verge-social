@@ -37,14 +37,21 @@ export class PostsController {
     );
   }
   @Get()
-  async getFeed(
+  async getPosts(
     @Query('limit') limit: string,
-    @Query('cursor') cursor?: string,
-    @Query('channelId') channelId?: string,
+    @Query('cursor') cursor: string,
+    @Query('channelId') channelId: string,
+    @Req() req: any,
   ) {
     const parsedLimit = parseInt(limit, 10) || 5;
-    const cleanChannelId = (channelId === 'null' || channelId === 'undefined' || !channelId) ? undefined : channelId;
-    return this.postsService.getPaginatedPosts(parsedLimit, cursor, cleanChannelId);
+    const userId = req.user.id;
+
+    return this.postsService.getPaginatedPosts(
+      parsedLimit,
+      userId,
+      cursor,
+      channelId,
+    );
   }
 
   @Get(':id')

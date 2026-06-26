@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -36,18 +36,20 @@ export class PostsService {
     return this.postModel.find().populate('authorId', 'name email role avatarUrl').exec();
   }
 
-  async getPaginatedPosts(limit: number, nextCursor?: string, channelId?: string) {
-    console.log('GET PAGINATED POSTS HIT');
+  async getPaginatedPosts(limit: number, userId: string, nextCursor?: string, channelId?: string) {
+    console.log('GET PAGINATED POSTS HIT', channelId);
+
+    if (!channelId || channelId === 'null' || channelId === 'undefined') {
+      throw new BadRequestException('A valid channelId parameter is required to fetch posts.');
+    }
+
     const query: any = {};
 
-    if (channelId) {
       query.channelId = new Types.ObjectId(channelId);
-    } else {
-      query.channelId = null;
-    }
-    if (nextCursor) {
-      query._id = { $lt: new Types.ObjectId(nextCursor) };
-    }
+
+     if (nextCursor) {
+       query._id = { $lt: new Types.ObjectId(nextCursor) };
+     }
 
     const posts = await this.postModel
       .find(query)
@@ -57,7 +59,6 @@ export class PostsService {
       .exec();
 
     const hasNextPage = posts.length > limit;
-
     if (hasNextPage) {
       posts.pop();
     }
